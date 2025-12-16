@@ -1,0 +1,38 @@
+হ্যাঁ ভাই, এখন তোমার ল্যান্ডিং পেজটা একদম ঠিকঠাক দাঁড়িয়েছে — এটা ধরে রাখো। এখন থেকে আমরা এটাকে ধাপে ধাপে পুরোপুরি e-commerce beast বানাবো।
+তোমার জন্য ২০২৫াইনাল রোডম্যাপ (যেটা ৯০% বাংলাদেশি ফ্রিল্যান্সাররাও ফলো করে ক্লায়েন্টের মন জয় করে):
+Must-Have Features (এগুলো না থাকলে ক্লায়েন্ট বলবে “অসম্পূর্ণ”)
+
+
+ফিচারকেন লাগবে?কী টেক ব্যবহার করবোProduct Listing + Grid/Listপ্রোডাক্ট না দেখলে কেউ কিনবে নাNext.js App Router + PrismaProduct Details Pageছবি জুম, সাইজ/কালার চয়েস, রিভিউ, related productsDynamic route [slug]Cart System (with persistence)পেজ রিফ্রেশ করলেও কার্ট থাকবেZustand / Redux ToolkitCart Drawer / Sidebarমোবাইলে সুন্দর দেখাবেHeadless UI + Framer MotionWishlist / Save for laterক্লায়েন্ট ১০০% চাইবেLocalStorage + DB (optional)Search + Filterক্যাটাগরি, প্রাইস রেঞ্জ, সাইজ, কালারTanstack Query + debounceUser Auth (Google + Email)অর্ডার, উইশলিস্ট, অ্যাড্রেস সেভ করার জন্যNextAuth.js v5 + Prisma AdapterCheckout + Address Formবিলিং + শিপিং অ্যাড্রেসReact Hook Form + ZodPayment Gatewayবাংলাদেশ + আন্তর্জাতিক ক্লায়েন্টের জন্যSSLCommerz / Stripe / AamarPayOrder History + Statusইউজার দেখবে তার অর্ডার কোথায় আছেPrisma + Admin dashboardAdmin Dashboardপ্রোডাক্ট যোগ/এডিট/ডিলিট, অর্ডার ম্যানেজCustom route /admin + Tanstack TableResponsive + Mobile First৮০% ট্রাফিক মোবাইল থেকেTailwind mobile-firstLoading Skeleton + SEOUX + Google rankingNext.js metadata + Skeleton
+Bonus Premium Features (যেগুলো দিলে ক্লায়েন্ট পাগল হয়ে যায়)
+
+Product image zoom + lightbox
+Quick view modal
+Recently viewed products
+Flash sale countdown timer
+Reviews + Rating system
+Coupon code system
+Newsletter popup (Klaviyo style)
+Animated add-to-cart flying effect (আগে বানিয়েছি)
+3D product hover (react-three-fiber optional)
+Dark/Light mode toggle (তোমার আছে)
+
+আমি কীভাবে তোমাকে হেল্প করবো এখন থেকে?
+তুমি শুধু বলো কোনটা আগে চাও:
+
+Product listing + filter page
+Product details page (with zoom)
+Cart drawer + flying animation
+Auth (Google + Email)
+Checkout + SSLCommerz
+Admin dashboard
+
+যেটা বলবে, সেটা আজই বানিয়ে দিব — full code + folder structure + explanation।
+এখন বলো — কোনটা দিয়ে শুরু করবো?
+আমি রেডি আছি। তুমিও রেডি থাকো। এবার তোমার e-baz সত্যিই উড়বে!
+
+Bang & Olufsen – hero-এ huge product name, নিচে short tagline + CTA, বাকি empty black/white
+Apple Watch Ultra landing – huge title, নিচে "Adventure awaits" type tagline + button, massive empty space
+Rimowa (luggage brand) – hero-এ product, নিচে "Engineered for life" + shop button, empty space
+Aesop (skincare) – minimal text + huge whitespace
+DECEM10 (তোমার আগের reference) – exactly same: tagline + no clutter

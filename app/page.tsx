@@ -1,13 +1,15 @@
-'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
 
-
-import HeaderOption2 from '@/src/components/Header';
-import HeaderOption1 from '@/src/components/Header';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { SplitText } from 'gsap/SplitText';
-import Lenis from 'lenis';
-import { useEffect, useRef } from 'react';
+import Footer from "@/component/Footer";
+import Slider from "@/component/Slider";
+import HeaderOption2 from "@/src/components/Header";
+import HeaderOption1 from "@/src/components/Header";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
+import Lenis from "lenis";
+import { useEffect, useRef } from "react";
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -31,7 +33,9 @@ export default function Home() {
 
     // SplitText Animation
     if (heroTitleRef.current) {
-      const split = new SplitText(heroTitleRef.current, { type: "chars,words" });
+      const split = new SplitText(heroTitleRef.current, {
+        type: "chars,words",
+      });
       gsap.from(split.chars, {
         duration: 1.2,
         y: 200,
@@ -43,28 +47,36 @@ export default function Home() {
     }
 
     // Tagline
-    gsap.fromTo("p.font-light", {
-      opacity: 0,
-      y: 50
-    }, {
-      opacity: 0.8,
-      y: 0,
-      duration: 1.5,
-      delay: 1.2,
-      ease: "power3.out"
-    });
+    gsap.fromTo(
+      "p.font-light",
+      {
+        opacity: 0,
+        y: 50,
+      },
+      {
+        opacity: 0.8,
+        y: 0,
+        duration: 1.5,
+        delay: 1.2,
+        ease: "power3.out",
+      }
+    );
 
     // Button
-    gsap.fromTo("button", {
-      opacity: 0,
-      y: 80
-    }, {
-      opacity: 1,
-      y: 0,
-      duration: 1.8,
-      delay: 1.5,
-      ease: "back.out(1.4)"
-    });
+    gsap.fromTo(
+      "button",
+      {
+        opacity: 0,
+        y: 80,
+      },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 1.8,
+        delay: 1.5,
+        ease: "back.out(1.4)",
+      }
+    );
 
     // Scroll indicator pulse
     gsap.to(".animate-bounce", {
@@ -72,7 +84,7 @@ export default function Home() {
       duration: 1.5,
       repeat: -1,
       yoyo: true,
-      ease: "power1.inOut"
+      ease: "power1.inOut",
     });
 
     // Custom Cursor
@@ -82,7 +94,7 @@ export default function Home() {
           x: e.clientX,
           y: e.clientY,
           duration: 0.7,
-          ease: "power3.out"
+          ease: "power3.out",
         });
       }
     };
@@ -97,8 +109,8 @@ export default function Home() {
           trigger: el,
           start: "top bottom",
           end: "bottom top",
-          scrub: true
-        }
+          scrub: true,
+        },
       });
     });
 
@@ -120,7 +132,6 @@ export default function Home() {
 
       <div className="bg-black text-white min-h-screen">
         {/* Hero */}
-
         <section className="h-screen relative overflow-hidden flex items-center justify-center">
           {/* Desktop Video Background */}
           <video
@@ -130,7 +141,7 @@ export default function Home() {
             playsInline
             preload="auto"
             poster="/poster.jpg"
-            className="absolute inset-0 w-full h-full object-cover -z-10"
+            className="absolute inset-0 bg-red-500"
           >
             <source src="/hero.mp4" type="video/mp4" />
             Your browser does not support the video tag.
@@ -139,7 +150,7 @@ export default function Home() {
           {/* Mobile Fallback Image (video hide থাকলে দেখাবে) */}
           <div
             className="absolute inset-0 -z-10 bg-cover bg-center md:hidden"
-            style={{ backgroundImage: "url('/poster.jpg')" }}  // same poster image
+            style={{ backgroundImage: "url('/poster.jpg')" }} // same poster image
           />
 
           {/* Dark overlay (text যাতে readable হয়) */}
@@ -171,28 +182,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* <section className="h-screen flex items-center justify-center relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-black/80 to-black" />
-              <div className="relative z-10 text-center px-8">
-              <h1 ref={heroTitleRef} className="text-8xl md:text-[200px] font-black leading-none tracking-tighter">
-                LUXE
-              </h1>
-
-              <p className="text-2xl md:text-4xl mt-12 font-light tracking-wide opacity-80">
-                Minimal • Timeless • Yours
-              </p>
-
-              <button className="mt-20 px-20 py-6 text-xl md:text-2xl font-medium border-2 border-white rounded-full hover:bg-white hover:text-black hover:shadow-2xl hover:shadow-white/20 transition-all duration-700 relative overflow-hidden group">
-                <span className="relative z-10">Shop Now</span>
-              </button>
-
-              <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
-                <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
-                  <div className="w-1 h-3 bg-white/70 rounded-full mt-2 animate-bounce" />
-                </div>
-              </div>
-            </div>
-        </section> */}
+        <Slider />
 
         {/* Featured Products */}
         <section className="py-40">
@@ -215,24 +205,30 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Big Text */}
-        <section className="h-screen flex items-center justify-center">
-          <h2 className="parallax text-9xl md:text-[300px] font-black leading-none text-center opacity-5">
-            CRAFTED<br />WITH<br />PRECISION
+        <section className="h-screen relative flex items-center justify-center overflow-hidden">
+          {/* Parallax Big Text (background) */}
+          <h2 className="parallax absolute inset-0 flex items-center justify-center text-9xl md:text-[300px] font-black leading-none text-center opacity-5 pointer-events-none">
+            CRAFTED
+            <br />
+            WITH
+            <br />
+            PRECISION
           </h2>
-        </section>
 
-        {/* CTA */}
-        <section className="h-screen flex items-center justify-center">
-          <div className="text-center">
+          {/* CTA (foreground) */}
+          <div className="relative z-10 text-center px-8">
             <h2 className="text-8xl md:text-9xl font-black mb-16">
-              Ready to<br />Elevate?
+              Ready to
+              <br />
+              Elevate?
             </h2>
             <button className="px-24 py-8 text-4xl font-bold bg-white text-black rounded-full hover:scale-110 transition-all duration-500 shadow-2xl">
               Start Shopping
             </button>
           </div>
         </section>
+
+        <Footer />
       </div>
     </>
   );

@@ -25,8 +25,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+        <meta name="viewport" />
+        <meta
+          httpEquiv="Content-Security-Policy"
+          content="upgrade-insecure-requests"
+        />
         <meta name="format-detection" content="telephone=no" />
       </head>
       <body
