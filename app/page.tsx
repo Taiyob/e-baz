@@ -2,6 +2,7 @@
 "use client";
 
 import Footer from "@/component/Footer";
+import NewNotable from "@/component/NewNotable";
 import Slider from "@/component/Slider";
 import HeaderOption2 from "@/src/components/Header";
 import HeaderOption1 from "@/src/components/Header";
@@ -204,6 +205,8 @@ export default function Home() {
             ))}
           </div>
         </section>
+
+        <NewNotable />
 
         <section className="h-screen relative flex items-center justify-center overflow-hidden">
           {/* Parallax Big Text (background) */}
