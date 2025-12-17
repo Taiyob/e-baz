@@ -97,7 +97,7 @@ export default function HeaderOption2() {
 
       <Link href="/cart" className="flex items-center gap-2 text-lg tracking-wider hover:opacity-70 transition">
         BASKET
-        <div className="relative">
+        <div id="basket-icon" className="relative">
           <ShoppingBag size={24} />
           {cartCount > 0 && (
             <span className="absolute -top-2 -right-2 w-5 h-5 bg-white text-black rounded-full text-xs flex items-center justify-center font-bold">

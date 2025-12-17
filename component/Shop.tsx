@@ -1,7 +1,9 @@
 "use client";
 
+import { useCart } from "@/src/lib/cartStore";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -25,8 +27,8 @@ const products = [
   { id: 8, name: "Shadow Limited", price: 29999, category: "Limited Edition" },
   { id: 9, name: "Chronos Master Pro", price: 17999, category: "Watches" },
   { id: 10, name: "Eternal Diamond", price: 22999, category: "Jewelry" },
-  // আরও যোগ করো
 ];
+
 
 export default function Shop() {
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -107,7 +109,8 @@ export default function Shop() {
           <div ref={gridRef} className="flex-1">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
               {filteredProducts.map((product) => (
-                <div
+                <Link href={`/product/${product.id}`} key={product.id} className="product-card group cursor-pointer" >
+                  <div
                   key={product.id}
                   className="product-card group cursor-pointer"
                 >
@@ -129,6 +132,7 @@ export default function Shop() {
                     </div>
                   </div>
                 </div>
+                </Link>
               ))}
             </div>
           </div>
