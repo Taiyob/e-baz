@@ -7,18 +7,109 @@ datasource db {
   provider = "postgresql"
 }
 
+// User model (customer + admin)
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
-  posts Post[]
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  password  String?  // hashed (NextAuth credentials-এর জন্য)
+  role      Role     @default(USER)
+  addresses Address[]
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
 }
 
-model Post {
+// Role enum
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+// Category model
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  image     String?   // main category image
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("categories")
+}
+
+// Product model
+model Product {
+  id          Int        @id @default(autoincrement())
+  name        String
+  price       Float
+  description String?
+  images      String[]   // array of image URLs
+  category    Category   @relation(fields: [categoryId], references: [id])
+  categoryId  Int
+  inStock     Boolean    @default(true)
+  featured    Boolean    @default(false)
+  orderItems  OrderItem[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("products")
+}
+
+// Address model
+model Address {
+  id         Int    @id @default(autoincrement())
+  user       User   @relation(fields: [userId], references: [id])
+  userId     Int
+  street     String
+  city       String
+  state      String?
+  zipCode    String
+  country    String @default("Bangladesh")
+  isDefault  Boolean @default(false)
+  createdAt  DateTime @default(now())
+
+  orders     Order[]
+
+  @@map("addresses")
+}
+
+// Order model
+model Order {
+  id         Int         @id @default(autoincrement())
+  user       User        @relation(fields: [userId], references: [id])
+  userId     Int
+  totalPrice Float
+  status     OrderStatus @default(PENDING)
+  items      OrderItem[]
+  address    Address?    @relation(fields: [addressId], references: [id])
+  addressId  Int?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@map("orders")
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+// OrderItem model
+model OrderItem {
   id        Int     @id @default(autoincrement())
-  title     String
-  content   String?
-  published Boolean @default(false)
-  author    User    @relation(fields: [authorId], references: [id])
-  authorId  Int
+  order     Order   @relation(fields: [orderId], references: [id])
+  orderId   Int
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+  quantity  Int
+  price     Float   // price at time of purchase
+
+  @@map("order_items")
 }
