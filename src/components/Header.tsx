@@ -45,10 +45,12 @@ import Link from 'next/link';
 import { ShoppingBag } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { gsap } from 'gsap';
+import { useCart } from '@/src/lib/cartStore';
 
-export default function HeaderOption2() {
-  const [cartCount] = useState(0);
-  const [visible, setVisible] = useState(false);
+export default function HeaderOption2({ onCartClick }: { onCartClick: () => void }) {
+  const { getTotalItems } = useCart();
+  const cartCount = getTotalItems();
+  const [visible, setVisible] = useState(true);
   let lastScrollY = 0;
 
   useEffect(() => {
@@ -56,7 +58,7 @@ export default function HeaderOption2() {
       const currentScrollY = window.scrollY;
       
       if (currentScrollY < 100) {
-        setVisible(false);
+        setVisible(true);
       } else if (currentScrollY < lastScrollY) {
         setVisible(true); // scroll up
       } else {
@@ -67,9 +69,7 @@ export default function HeaderOption2() {
     };
 
     const handleMouse = (e: MouseEvent) => {
-      if (e.clientY < 100) {
-        setVisible(true);
-      }
+      if (e.clientY < 100) setVisible(true);
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -95,17 +95,20 @@ export default function HeaderOption2() {
         SHOP
       </Link>
 
-      <Link href="/cart" className="flex items-center gap-2 text-lg tracking-wider hover:opacity-70 transition">
+      <button 
+        onClick={onCartClick}
+        className="flex items-center gap-2 text-lg tracking-wider hover:opacity-70 transition"
+      >
         BASKET
         <div id="basket-icon" className="relative">
           <ShoppingBag size={24} />
           {cartCount > 0 && (
-            <span className="absolute -top-2 -right-2 w-5 h-5 bg-white text-black rounded-full text-xs flex items-center justify-center font-bold">
+            <span className="absolute -top-2 -right-2 min-w-5 h-5 px-1 bg-white text-black rounded-full text-xs flex items-center justify-center font-bold animate-bounce">
               {cartCount}
             </span>
           )}
         </div>
-      </Link>
+      </button>
     </header>
   );
 }

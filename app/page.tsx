@@ -124,7 +124,7 @@ export default function Home() {
   return (
     <>
       {/* <HeaderOption1 /> */}
-      <HeaderOption2 />
+      <HeaderOption2 onCartClick={() => {}} />
       {/* Custom Cursor */}
       <div
         ref={cursorRef}
