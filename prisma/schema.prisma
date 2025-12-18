@@ -1,6 +1,7 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
+  //output       = "../generated/prisma"
+  //moduleFormat = "cjs"
 }
 
 datasource db {
@@ -9,17 +10,17 @@ datasource db {
 
 // User model (customer + admin)
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  password  String?  
-  resetToken String?
+  id          Int       @id @default(autoincrement())
+  email       String    @unique
+  name        String?
+  password    String?
+  resetToken  String?
   resetExpiry DateTime?
-  role      Role     @default(USER)
-  addresses Address[]
-  orders    Order[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  role        Role      @default(USER)
+  addresses   Address[]
+  orders      Order[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@map("users")
 }
@@ -35,7 +36,7 @@ enum Role {
 model Category {
   id        Int       @id @default(autoincrement())
   name      String    @unique
-  image     String?   // main category image
+  image     String? // main category image
   products  Product[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -45,36 +46,36 @@ model Category {
 
 // Product model
 model Product {
-  id          Int        @id @default(autoincrement())
+  id          Int         @id @default(autoincrement())
   name        String
   price       Float
   description String?
-  images      String[]   // array of image URLs
-  category    Category   @relation(fields: [categoryId], references: [id])
+  images      String[] // array of image URLs
+  category    Category    @relation(fields: [categoryId], references: [id])
   categoryId  Int
-  inStock     Boolean    @default(true)
-  featured    Boolean    @default(false)
+  inStock     Boolean     @default(true)
+  featured    Boolean     @default(false)
   orderItems  OrderItem[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   @@map("products")
 }
 
 // Address model
 model Address {
-  id         Int    @id @default(autoincrement())
-  user       User   @relation(fields: [userId], references: [id])
-  userId     Int
-  street     String
-  city       String
-  state      String?
-  zipCode    String
-  country    String @default("Bangladesh")
-  isDefault  Boolean @default(false)
-  createdAt  DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  street    String
+  city      String
+  state     String?
+  zipCode   String
+  country   String   @default("Bangladesh")
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
 
-  orders     Order[]
+  orders Order[]
 
   @@map("addresses")
 }
@@ -111,7 +112,7 @@ model OrderItem {
   product   Product @relation(fields: [productId], references: [id])
   productId Int
   quantity  Int
-  price     Float   // price at time of purchase
+  price     Float // price at time of purchase
 
   @@map("order_items")
 }
