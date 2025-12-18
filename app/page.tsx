@@ -102,14 +102,14 @@ export default function Home() {
 
   return (
     <>
-      <HeaderOption2 onCartClick={() => {}} />
+      <HeaderOption2 />
       <div
         ref={cursorRef}
         className="fixed w-10 h-10 bg-white rounded-full pointer-events-none z-50 mix-blend-difference hidden md:block -translate-x-1/2 -translate-y-1/2"
       />
 
       <div className="bg-black text-white min-h-screen">
-        {/* Hero Section - আপনার ভিডিও ব্যাকগ্রাউন্ড কোড এখানে থাকবে */}
+
         <section className="h-screen relative overflow-hidden flex items-center justify-center">
           <video
             autoPlay
@@ -186,14 +186,14 @@ export default function Home() {
 
         <NewNotable />
 
-        {/* Crafted with Precision & Footer - আপনার আগের কোড */}
+        {/* Crafted with Precision & Footer */}
         <section className="h-screen relative flex items-center justify-center overflow-hidden">
           {/* Banner Background */}
           <Image
-            src="https://png.pngtree.com/thumb_back/fw800/background/20251015/pngtree-luxury-watch-with-silver-case-on-black-marble-image_19852132.webp" // ei link ta change kore tomar pasand er image url rakho
+            src="https://png.pngtree.com/thumb_back/fw800/background/20251015/pngtree-luxury-watch-with-silver-case-on-black-marble-image_19852132.webp" 
             alt="Luxury Banner"
             fill
-            className="object-cover opacity-30" // opacity 20-40% rakho jate text clear thake
+            className="object-cover opacity-30" // opacity 20-40% 
             priority
           />
 

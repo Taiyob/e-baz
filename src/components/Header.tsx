@@ -51,13 +51,10 @@ import { gsap } from "gsap";
 import { useCart } from "@/src/lib/cartStore";
 import { useSession, signOut } from "next-auth/react";
 
-export default function HeaderOption2({
-  onCartClick,
-}: {
-  onCartClick: () => void;
-}) {
+
+export default function HeaderOption2() {
   const { data: session, status } = useSession();
-  const { getTotalItems } = useCart();
+  const { items, openDrawer } = useCart();
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
   let lastScrollY = 0;
@@ -99,6 +96,8 @@ export default function HeaderOption2({
     });
   }, [visible]);
 
+  const userItemsCount = items.filter(item => item.userId === session?.user?.id).length;
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-8 py-6 flex items-center justify-between text-white mix-blend-difference bg-black/30 backdrop-blur-md">
       <Link
@@ -131,20 +130,19 @@ export default function HeaderOption2({
           )
         )}
 
-        <Link
-          href="/cart"
-          className="flex items-center gap-2 text-lg tracking-wider hover:opacity-70 transition"
-        >
-          BASKET
-          <div id="basket-icon" className="relative">
-            <ShoppingBag size={24} />
-            {mounted && getTotalItems() > 0 && (
-              <span className="absolute -top-2 -right-2 w-5 h-5 bg-white text-black rounded-full text-xs flex items-center justify-center font-bold">
-                {getTotalItems()}
-              </span>
-            )}
-          </div>
-        </Link>
+      <button 
+        id="basket-icon" 
+        onClick={openDrawer} // স্টোর থেকে সরাসরি কল
+        className="flex items-center gap-2 relative ..."
+      >
+        BASKET
+        <ShoppingBag size={24} />
+        {userItemsCount > 0 && (
+          <span className="absolute -top-1 -right-1 w-5 h-5 bg-white text-black rounded-full text-[10px] flex items-center justify-center font-black">
+            {userItemsCount}
+          </span>
+        )}
+      </button>
       </div>
     </header>
   );

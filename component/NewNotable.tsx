@@ -5,6 +5,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
+import { useCart } from "@/src/lib/cartStore";
+import { useSession } from "next-auth/react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -24,15 +26,15 @@ export default function NewNotable() {
   const sliderRef = useRef<HTMLDivElement>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const { data: session } = useSession();
+  const { addItem } = useCart();
 
-  // ১. ডাটা ফেচ করা
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const res = await fetch("/api/products");
         const data = await res.json();
         if (res.ok) {
-          // স্লাইডারে দেখানোর জন্য লেটেস্ট ৩-৬টি প্রোডাক্ট নিতে পারেন
           setProducts(data.slice(0, 6));
         }
       } catch (error) {
@@ -44,7 +46,6 @@ export default function NewNotable() {
     fetchProducts();
   }, []);
 
-  // ২. GSAP অ্যানিমেশন (ডাটা আসার পর রান হবে)
   useEffect(() => {
     if (loading || products.length === 0) return;
 
@@ -68,6 +69,23 @@ export default function NewNotable() {
       );
     }
   }, [loading, products]);
+
+  const handleQuickAdd = async (product: any) => {
+  if (!session) return window.location.href = "/sign-in"; 
+
+  addItem({
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    image: product.images?.[0]
+  }, session.user.id); 
+
+  await fetch("/api/cart", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ productId: product.id, quantity: 1 })
+  });
+};
 
   const scrollLeft = () => {
     if (sliderRef.current) {
@@ -158,7 +176,7 @@ export default function NewNotable() {
                     <p className="text-2xl font-black">
                       ${product.price.toLocaleString()}
                     </p>
-                    <button className="px-8 py-3 bg-white text-black text-sm font-bold rounded-full hover:bg-gray-200 transition">
+                    <button onClick={() => handleQuickAdd(product)} className="px-8 py-3 bg-white text-black text-sm font-bold rounded-full hover:bg-gray-200 transition">
                       Add to cart
                     </button>
                   </div>

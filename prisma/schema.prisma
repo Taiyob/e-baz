@@ -19,6 +19,7 @@ model User {
   role        Role      @default(USER)
   addresses   Address[]
   orders      Order[]
+  cartItems   CartItem[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -56,6 +57,7 @@ model Product {
   inStock     Boolean     @default(true)
   featured    Boolean     @default(false)
   orderItems  OrderItem[]
+  cartItems   CartItem[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
@@ -115,4 +117,13 @@ model OrderItem {
   price     Float // price at time of purchase
 
   @@map("order_items")
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  quantity  Int      @default(1)
+  user      User     @relation(fields: [userId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
 }
