@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react-hooks/immutability */
 // // src/components/HeaderOption1.tsx
 
 // 'use client';
@@ -39,34 +42,39 @@
 
 // src/components/HeaderOption2.tsx
 
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { ShoppingBag, UserIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { gsap } from 'gsap';
-import { useCart } from '@/src/lib/cartStore';
+import Link from "next/link";
+import { ShoppingBag, UserIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { gsap } from "gsap";
+import { useCart } from "@/src/lib/cartStore";
 import { useSession, signOut } from "next-auth/react";
 
-export default function HeaderOption2({ onCartClick }: { onCartClick: () => void }) {
-  const { getTotalItems } = useCart();
-  const cartCount = getTotalItems();
-  const [visible, setVisible] = useState(true);
-  let lastScrollY = 0;
+export default function HeaderOption2({
+  onCartClick,
+}: {
+  onCartClick: () => void;
+}) {
   const { data: session, status } = useSession();
+  const { getTotalItems } = useCart();
+  const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(false);
+  let lastScrollY = 0;
 
   useEffect(() => {
+    setMounted(true);
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      
+
       if (currentScrollY < 100) {
         setVisible(true);
       } else if (currentScrollY < lastScrollY) {
-        setVisible(true); // scroll up
+        setVisible(true);
       } else {
-        setVisible(false); // scroll down
+        setVisible(false);
       }
-      
+
       lastScrollY = currentScrollY;
     };
 
@@ -74,12 +82,12 @@ export default function HeaderOption2({ onCartClick }: { onCartClick: () => void
       if (e.clientY < 100) setVisible(true);
     };
 
-    window.addEventListener('scroll', handleScroll);
-    window.addEventListener('mousemove', handleMouse);
+    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("mousemove", handleMouse);
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('mousemove', handleMouse);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("mousemove", handleMouse);
     };
   }, []);
 
@@ -87,44 +95,57 @@ export default function HeaderOption2({ onCartClick }: { onCartClick: () => void
     gsap.to("header", {
       y: visible ? 0 : -100,
       duration: 0.6,
-      ease: "power3.out"
+      ease: "power3.out",
     });
   }, [visible]);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-8 py-6 flex items-center justify-between text-white mix-blend-difference bg-black/30 backdrop-blur-md">
-      <Link href="/shop" className="text-lg tracking-wider hover:opacity-70 transition">
+      <Link
+        href="/shop"
+        className="text-lg tracking-wider hover:opacity-70 transition"
+      >
         SHOP
       </Link>
 
-      <button 
-        onClick={onCartClick}
-        className="flex items-center gap-2 text-lg tracking-wider hover:opacity-70 transition"
-      >
-        BASKET
-        <div id="basket-icon" className="relative">
-          <ShoppingBag size={24} />
-          {cartCount > 0 && (
-            <span className="absolute -top-2 -right-2 min-w-5 h-5 px-1 bg-white text-black rounded-full text-xs flex items-center justify-center font-bold animate-bounce">
-              {cartCount}
-            </span>
-          )}
-        </div>
-      </button>
-
-      <div className="flex items-center gap-8">
-        {/* User authenticated thakle name dekhabe */}
-        {status === "authenticated" && session?.user && (
-          <div className="flex items-center gap-2 text-sm">
+      <div className="flex items-center gap-6">
+        {mounted && status === "authenticated" ? (
+          <div className="flex items-center gap-3 text-sm font-medium tracking-widest uppercase">
             <UserIcon size={18} />
-            <span>{session.user.name}</span>
-            <button onClick={() => signOut()} className="ml-4 opacity-50">(LOGOUT)</button>
+            <span>{session?.user?.name}</span>
+            <button
+              onClick={() => signOut({ redirect: false })}
+              className="ml-2 text-[10px] opacity-50 hover:opacity-100 transition"
+            >
+              (LOGOUT)
+            </button>
           </div>
+        ) : (
+          mounted && (
+            <Link
+              href="/sign-in"
+              className="text-sm tracking-widest hover:opacity-70 transition"
+            >
+              SIGN IN
+            </Link>
+          )
         )}
-        
-        {/* ... Cart/Basket icon */}
-      </div>
 
+        <Link
+          href="/cart"
+          className="flex items-center gap-2 text-lg tracking-wider hover:opacity-70 transition"
+        >
+          BASKET
+          <div id="basket-icon" className="relative">
+            <ShoppingBag size={24} />
+            {mounted && getTotalItems() > 0 && (
+              <span className="absolute -top-2 -right-2 w-5 h-5 bg-white text-black rounded-full text-xs flex items-center justify-center font-bold">
+                {getTotalItems()}
+              </span>
+            )}
+          </div>
+        </Link>
+      </div>
     </header>
   );
 }
