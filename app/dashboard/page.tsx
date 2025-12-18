@@ -1,344 +1,596 @@
-'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
 
-import { gsap } from 'gsap';
-import { useEffect, useState } from 'react';
-import { Plus, Edit, Trash2, X, Upload } from 'lucide-react';
+import Image from "next/image";
+import { useSession, signOut } from "next-auth/react";
+import { useState, useEffect } from "react";
+import {
+  ShoppingBag,
+  List,
+  Package,
+  Users,
+  LogOut,
+  User as UserIcon,
+  MapPin,
+  Settings,
+  LayoutGrid,
+  Plus,
+  Edit,
+  Trash2,
+  X,
+  Upload,
+  Lock,
+} from "lucide-react";
+import { gsap } from "gsap";
 
-// Simple role check
-const isAdmin = true;
+export default function DashboardPage() {
+  const { data: session, status, update } = useSession();
+  const [activeTab, setActiveTab] = useState("overview");
+  const [activeSubTab, setActiveSubTab] = useState("categories");
 
-type Category = {
-  id: number;
-  name: string;
-  image?: string; // preview URL
-};
+  // Profile States
+  const [profileData, setProfileData] = useState({ name: "", email: "" });
+  const [updating, setUpdating] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [changingPassword, setChangingPassword] = useState(false);
 
-type Product = {
-  id: number;
-  name: string;
-  price: number;
-  categoryId: number;
-  categoryName: string;
-  images?: string[]; // preview URLs
-};
+  // Items Data States
+  const [categories, setCategories] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
 
-const initialCategories: Category[] = [
-  { id: 1, name: "Watches", image: "https://thumbs.dreamstime.com/b/elegant-black-luxury-watch-dark-background-minimalist-design-high-contrast-lighting-sleek-rests-against-deep-407100601.jpg" },
-  { id: 2, name: "Jewelry", image: "https://media.istockphoto.com/id/1127154603/photo/interwoven-diamond-engagement-ring-wedding-ring-on-black-background.jpg?s=612x612&w=0&k=20&c=O9lGOuSwnBMc_proWPjzLdcBMgm1GJWBz3NWIwUVbes=" },
-  { id: 3, name: "Accessories", image: "https://cdn.shopify.com/s/files/1/0179/8075/products/no-398-bifold-wallet-black-leather-front.jpg" },
-  { id: 4, name: "Limited Edition", image: "https://thumbs.dreamstime.com/b/luxury-gold-watch-black-dial-leather-strap-dark-background-elegant-minimalist-timepiece-showcasing-precise-407840004.jpg" },
-];
-
-const initialProducts: Product[] = [
-  { id: 1, name: "Chronos Master", price: 12999, categoryId: 1, categoryName: "Watches", images: ["https://thumbs.dreamstime.com/b/elegant-black-luxury-watch-dark-background-minimalist-design-high-contrast-lighting-sleek-rests-against-deep-407100601.jpg"] },
-  { id: 2, name: "Eternal Ring", price: 8999, categoryId: 2, categoryName: "Jewelry", images: ["https://media.istockphoto.com/id/483048997/photo/three-stone-rings-on-black.jpg?s=612x612&w=0&k=20&c=meHNA6n_bk5eVO4cuGXnJYGxb2sF6PHnkKGUuWBMCH0="] },
-];
-
-export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState('overview');
-  const [activeSubTab, setActiveSubTab] = useState('categories');
-
-  const [categories, setCategories] = useState(initialCategories);
-  const [products, setProducts] = useState(initialProducts);
-
+  // Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState<'category' | 'product'>('category');
+  const [modalType, setModalType] = useState<"category" | "product">(
+    "category"
+  );
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    price: "",
+    categoryId: "",
+    images: [] as string[],
+  });
+  const [loading, setLoading] = useState(false);
 
-  const [formData, setFormData] = useState({ name: '', price: '', categoryId: '', images: [] as File[] });
-  const [previewImages, setPreviewImages] = useState<string[]>([]);
-
-  useEffect(() => {
-    gsap.fromTo('.tab-content', 
-      { opacity: 0, x: 50 },
-      { opacity: 1, x: 0, duration: 0.8, ease: "power3.out" }
-    );
-  }, [activeTab, activeSubTab]);
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const files = Array.from(e.target.files);
-      setFormData({ ...formData, images: files });
-      const previews = files.map(file => URL.createObjectURL(file));
-      setPreviewImages(previews);
+  // ১. ডাটা লোড করার লজিক
+  const fetchData = async () => {
+    try {
+      const [catRes, prodRes] = await Promise.all([
+        fetch("/api/category"),
+        fetch("/api/products"),
+      ]);
+      if (catRes.ok) setCategories(await catRes.json());
+      if (prodRes.ok) setProducts(await prodRes.json());
+    } catch (error) {
+      console.error("Fetch Error:", error);
     }
   };
 
-  const openModal = (type: 'category' | 'product', item?: any) => {
+  const fetchProfile = async () => {
+    try {
+      const res = await fetch("/api/user/profile");
+      const data = await res.json();
+      if (res.ok) setProfileData({ name: data.name, email: data.email });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "profile") fetchProfile();
+    if (activeTab === "items") fetchData();
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (session?.user) {
+      setProfileData({
+        name: session.user.name || "",
+        email: session.user.email || "",
+      });
+    }
+  }, [session]);
+
+  // ২. প্রোফাইল ও পাসওয়ার্ড হ্যান্ডলার
+  const handleProfileUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUpdating(true);
+    try {
+      const res = await fetch("/api/user/update", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: profileData.name,
+          userId: session?.user?.id,
+        }),
+      });
+      if (res.ok) {
+        await update({ name: profileData.name });
+        alert("Profile updated!");
+        fetchProfile();
+      }
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordData.newPassword !== passwordData.confirmPassword)
+      return alert("Mismatch!");
+    setChangingPassword(true);
+    try {
+      const res = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: Number(session?.user?.id),
+          oldPassword: passwordData.oldPassword,
+          newPassword: passwordData.newPassword,
+        }),
+      });
+      if (res.ok) {
+        alert("Password updated!");
+        setPasswordData({
+          oldPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+      }
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
+  // ৩. মোডাল লজিক (Add/Edit)
+  const openModal = (type: "category" | "product", item?: any) => {
     setModalType(type);
     setEditingItem(item || null);
-    if (item) {
-      setFormData({
-        name: item.name,
-        price: type === 'product' ? String(item.price) : '',
-        categoryId: type === 'product' ? String(item.categoryId) : '',
-        images: []
-      });
-      setPreviewImages(item.images || item.image ? [item.image] : []);
-    } else {
-      setFormData({ name: '', price: '', categoryId: '', images: [] });
-      setPreviewImages([]);
-    }
+    setFormData({
+      name: item?.name || "",
+      price: type === "product" ? String(item?.price || "") : "",
+      categoryId: type === "product" ? String(item?.categoryId || "") : "",
+      images: item?.images || (item?.image ? [item.image] : []),
+    });
     setIsModalOpen(true);
   };
 
-  const handleSave = () => {
-    const imagePreviews = formData.images.map(file => URL.createObjectURL(file));
+  const handleSave = async () => {
+    setLoading(true);
+    const endpoint =
+      modalType === "category" ? "/api/category" : "/api/products";
+    const method = editingItem ? "PATCH" : "POST";
 
-    if (modalType === 'category') {
-      if (editingItem) {
-        setCategories(categories.map(c => c.id === editingItem.id ? { ...c, name: formData.name, image: imagePreviews[0] || c.image } : c));
-      } else {
-        setCategories([...categories, { id: categories.length + 1, name: formData.name, image: imagePreviews[0] }]);
-      }
-    } else {
-      const cat = categories.find(c => c.id === Number(formData.categoryId));
-      if (editingItem) {
-        setProducts(products.map(p => p.id === editingItem.id ? { ...p, name: formData.name, price: Number(formData.price), categoryId: Number(formData.categoryId), categoryName: cat?.name || p.categoryName, images: imagePreviews.length > 0 ? imagePreviews : p.images } : p));
-      } else {
-        setProducts([...products, {
-          id: products.length + 1,
-          name: formData.name,
+    // এডিট হলে আইডি পাঠাতে হবে (আপনার API রাউট অনুযায়ী)
+    const url = editingItem ? `${endpoint}/${editingItem.id}` : endpoint;
+
+    try {
+      const res = await fetch(url, {
+        method: method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
           price: Number(formData.price),
           categoryId: Number(formData.categoryId),
-          categoryName: cat?.name || "Unknown",
-          images: imagePreviews
-        }]);
+          image: formData.images[0], // ক্যাটাগরির জন্য
+        }),
+      });
+
+      if (res.ok) {
+        alert(`${modalType} ${editingItem ? "updated" : "created"}!`);
+        setIsModalOpen(false);
+        fetchData(); // লিস্ট রিফ্রেশ
+      } else {
+        alert("Error saving item");
       }
-    }
-    setIsModalOpen(false);
-    setEditingItem(null);
-    setFormData({ name: '', price: '', categoryId: '', images: [] });
-    setPreviewImages([]);
-  };
-
-  const handleDelete = (type: 'category' | 'product', id: number) => {
-    if (type === 'category') {
-      setCategories(categories.filter(c => c.id !== id));
-    } else {
-      setProducts(products.filter(p => p.id !== id));
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const tabs = [
-    'overview',
-    'profile',
-    isAdmin ? 'order-list' : 'orders',
-    'items',
-    'address',
-    isAdmin ? 'users' : 'preferences',
-  ];
+  useEffect(() => {
+    gsap.fromTo(
+      ".tab-content",
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }
+    );
+  }, [activeTab, activeSubTab]);
+
+  if (status === "loading")
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        Loading...
+      </div>
+    );
+  if (!session)
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        Unauthorized.
+      </div>
+    );
+
+  const role = session.user?.role;
+  const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="max-w-7xl mx-auto px-8 py-16">
-        <h1 className="text-6xl md:text-8xl font-black mb-16 text-center">My Account</h1>
-
-        {/* Main Tabs */}
-        <div className="flex flex-wrap justify-center gap-8 mb-16 border-b border-gray-800 pb-8">
-          {tabs.map(tab => (
-            <button
-              key={tab}
+    <div className="min-h-screen bg-black text-white flex">
+      {/* Sidebar */}
+      <div className="w-72 border-r border-gray-800 p-8 flex flex-col gap-8">
+        <h1 className="text-3xl font-black italic tracking-tighter">E-BAZ</h1>
+        <nav className="flex flex-col gap-2">
+          <SidebarItem
+            icon={<LayoutGrid size={20} />}
+            label="Overview"
+            active={activeTab === "overview"}
+            onClick={() => setActiveTab("overview")}
+          />
+          <SidebarItem
+            icon={<UserIcon size={20} />}
+            label="Profile"
+            active={activeTab === "profile"}
+            onClick={() => setActiveTab("profile")}
+          />
+          <SidebarItem
+            icon={isAdmin ? <List size={20} /> : <ShoppingBag size={20} />}
+            label={isAdmin ? "Order List" : "My Orders"}
+            active={activeTab === "orders"}
+            onClick={() => setActiveTab("orders")}
+          />
+          {isAdmin && (
+            <SidebarItem
+              icon={<Package size={20} />}
+              label="Items"
+              active={activeTab === "items"}
               onClick={() => {
-                setActiveTab(tab);
-                if (tab !== 'items') setActiveSubTab('categories');
+                setActiveTab("items");
+                setActiveSubTab("categories");
               }}
-              className={`text-xl capitalize hover:text-white transition ${activeTab === tab ? 'text-white font-bold' : 'text-gray-500'}`}
-            >
-              {tab.replace('-', ' ')}
-            </button>
-          ))}
-        </div>
+            />
+          )}
+          <SidebarItem
+            icon={<MapPin size={20} />}
+            label="Address"
+            active={activeTab === "address"}
+            onClick={() => setActiveTab("address")}
+          />
+          {isAdmin ? (
+            <SidebarItem
+              icon={<Users size={20} />}
+              label="Users"
+              active={activeTab === "users"}
+              onClick={() => setActiveTab("users")}
+            />
+          ) : (
+            <SidebarItem
+              icon={<Settings size={20} />}
+              label="Preferences"
+              active={activeTab === "preferences"}
+              onClick={() => setActiveTab("preferences")}
+            />
+          )}
+        </nav>
+        <button
+          onClick={() => signOut({ callbackUrl: "/sign-in" })}
+          className="mt-auto flex items-center gap-3 p-4 text-red-500 hover:bg-red-500/10 rounded-2xl transition font-bold"
+        >
+          <LogOut size={20} /> Logout
+        </button>
+      </div>
 
-        {/* Tab Content */}
+      <div className="flex-1 p-12 overflow-y-auto">
+        <header className="mb-12">
+          <h2 className="text-5xl font-black tracking-tight capitalize">
+            {activeTab.replace("-", " ")}
+          </h2>
+          <p className="text-gray-500 mt-3 text-lg">
+            Logged in as {session.user?.name} ({role})
+          </p>
+        </header>
+
         <div className="tab-content">
-          {/* ... overview, profile, orders, address, users same as before ... */}
+          {activeTab === "overview" && (
+            <div className="p-10 bg-gray-900/50 rounded-3xl border border-gray-800">
+              Welcome to Overview.
+            </div>
+          )}
 
-          {activeTab === 'items' && (
+          {activeTab === "profile" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+              {/* Profile Card */}
+              <div className="p-10 bg-gray-900/50 rounded-3xl border border-gray-800 shadow-2xl">
+                <div className="flex items-center gap-4 mb-8">
+                  <UserIcon className="text-gray-400" size={32} />
+                  <h3 className="text-3xl font-black">Personal Info</h3>
+                </div>
+                <form onSubmit={handleProfileUpdate} className="space-y-6">
+                  <input
+                    type="text"
+                    value={profileData.name}
+                    onChange={(e) =>
+                      setProfileData({ ...profileData, name: e.target.value })
+                    }
+                    className="w-full px-6 py-4 bg-black border border-gray-800 rounded-2xl text-xl focus:border-white outline-none"
+                  />
+                  <input
+                    type="email"
+                    value={profileData.email}
+                    disabled
+                    className="w-full px-6 py-4 bg-black border border-gray-800 rounded-2xl text-xl opacity-50 cursor-not-allowed"
+                  />
+                  <button
+                    type="submit"
+                    disabled={updating}
+                    className="w-full py-5 bg-white text-black rounded-full font-bold hover:scale-105 transition disabled:opacity-50"
+                  >
+                    {updating ? "Saving..." : "Update Profile"}
+                  </button>
+                </form>
+              </div>
+              {/* Password Card */}
+              <div className="p-10 bg-gray-900/50 rounded-3xl border border-gray-800 shadow-2xl">
+                <div className="flex items-center gap-4 mb-8">
+                  <Lock className="text-gray-400" size={32} />
+                  <h3 className="text-3xl font-black">Security</h3>
+                </div>
+                <form onSubmit={handleChangePassword} className="space-y-6">
+                  <input
+                    type="password"
+                    placeholder="Current Password"
+                    value={passwordData.oldPassword}
+                    onChange={(e) =>
+                      setPasswordData({
+                        ...passwordData,
+                        oldPassword: e.target.value,
+                      })
+                    }
+                    className="w-full px-6 py-4 bg-black border border-gray-800 rounded-2xl text-xl outline-none"
+                    required
+                  />
+                  <input
+                    type="password"
+                    placeholder="New Password"
+                    value={passwordData.newPassword}
+                    onChange={(e) =>
+                      setPasswordData({
+                        ...passwordData,
+                        newPassword: e.target.value,
+                      })
+                    }
+                    className="w-full px-6 py-4 bg-black border border-gray-800 rounded-2xl text-xl outline-none"
+                    required
+                  />
+                  <input
+                    type="password"
+                    placeholder="Confirm New"
+                    value={passwordData.confirmPassword}
+                    onChange={(e) =>
+                      setPasswordData({
+                        ...passwordData,
+                        confirmPassword: e.target.value,
+                      })
+                    }
+                    className="w-full px-6 py-4 bg-black border border-gray-800 rounded-2xl text-xl outline-none"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    disabled={changingPassword}
+                    className="w-full py-5 border border-white text-white rounded-full font-bold hover:bg-white hover:text-black transition disabled:opacity-50"
+                  >
+                    {changingPassword ? "Updating..." : "Change Password"}
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "items" && isAdmin && (
             <div>
-              {/* Sub Tabs */}
-              <div className="flex gap-12 mb-12 border-b border-gray-800 pb-4">
-                <button
-                  onClick={() => setActiveSubTab('categories')}
-                  className={`text-2xl font-bold ${activeSubTab === 'categories' ? 'text-white' : 'text-gray-500'} hover:text-white transition`}
-                >
-                  Categories
-                </button>
-                <button
-                  onClick={() => setActiveSubTab('products')}
-                  className={`text-2xl font-bold ${activeSubTab === 'products' ? 'text-white' : 'text-gray-500'} hover:text-white transition`}
-                >
-                  Products
-                </button>
+              <div className="flex gap-12 mb-10 border-b border-gray-800 pb-4">
+                {["categories", "products"].map((sub) => (
+                  <button
+                    key={sub}
+                    onClick={() => setActiveSubTab(sub)}
+                    className={`text-2xl font-bold capitalize transition ${
+                      activeSubTab === sub
+                        ? "text-white"
+                        : "text-gray-500 hover:text-white"
+                    }`}
+                  >
+                    {sub}
+                  </button>
+                ))}
               </div>
 
-              {/* Categories Tab */}
-              {activeSubTab === 'categories' && (
-                <div>
-                  <div className="flex justify-between items-center mb-12">
-                    <h2 className="text-4xl font-black">Categories</h2>
-                    <button onClick={() => openModal('category')} className="px-8 py-4 bg-white text-black font-bold rounded-full flex items-center gap-4">
-                      <Plus size={24} />
-                      Add Category
+              {activeSubTab === "categories" ? (
+                <div className="space-y-10">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-3xl font-black">Categories</h3>
+                    <button
+                      onClick={() => openModal("category")}
+                      className="px-6 py-3 bg-white text-black font-bold rounded-full flex items-center gap-2 hover:scale-105 transition"
+                    >
+                      <Plus size={20} /> Add Category
                     </button>
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                    {categories.map(cat => (
-                      <div key={cat.id} className="group cursor-pointer">
-                        <div className="relative overflow-hidden rounded-3xl aspect-square bg-gray-900 border border-gray-800">
-                          {cat.image ? (
-                            <img 
-                              src={cat.image} 
-                              alt={cat.name}
-                              className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-6xl opacity-20">
-                              {cat.name[0]}
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                          <h3 className="absolute bottom-8 left-8 text-4xl font-black">{cat.name}</h3>
-                        </div>
-                        <div className="mt-6 flex justify-center gap-6">
-                          <button onClick={() => openModal('category', cat)} className="px-6 py-3 border border-gray-600 rounded-full hover:bg-gray-800 transition">Edit</button>
-                          <button onClick={() => handleDelete('category', cat.id)} className="px-6 py-3 bg-red-900/50 rounded-full hover:bg-red-900 transition">Delete</button>
-                        </div>
-                      </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {categories.map((cat) => (
+                      <ItemCard
+                        key={cat.id}
+                        title={cat.name}
+                        image={cat.image}
+                        onEdit={() => openModal("category", cat)}
+                      />
                     ))}
                   </div>
                 </div>
-              )}
-
-              {/* Products Tab */}
-              {activeSubTab === 'products' && (
-                <div>
-                  <div className="flex justify-between items-center mb-12">
-                    <h2 className="text-4xl font-black">Products</h2>
-                    <button onClick={() => openModal('product')} className="px-8 py-4 bg-white text-black font-bold rounded-full flex items-center gap-4">
-                      <Plus size={24} />
-                      Add Product
+              ) : (
+                <div className="space-y-10">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-3xl font-black">Products</h3>
+                    <button
+                      onClick={() => openModal("product")}
+                      className="px-6 py-3 bg-white text-black font-bold rounded-full flex items-center gap-2 hover:scale-105 transition"
+                    >
+                      <Plus size={20} /> Add Product
                     </button>
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-                    {products.map(product => (
-                      <div key={product.id} className="group cursor-pointer">
-                        <div className="relative overflow-hidden rounded-3xl aspect-square bg-gray-900 border border-gray-800">
-                          {product.images && product.images.length > 0 ? (
-                            <img 
-                              src={product.images[0]} 
-                              alt={product.name}
-                              className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-6xl opacity-20">
-                              {product.name[0]}
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                          <div className="absolute bottom-8 left-8">
-                            <h3 className="text-4xl font-black">{product.name}</h3>
-                            <p className="text-2xl mt-2">${product.price.toLocaleString()}</p>
-                          </div>
-                        </div>
-                        <div className="mt-6 flex justify-center gap-6">
-                          <button onClick={() => openModal('product', product)} className="px-6 py-3 border border-gray-600 rounded-full hover:bg-gray-800 transition">Edit</button>
-                          <button onClick={() => handleDelete('product', product.id)} className="px-6 py-3 bg-red-900/50 rounded-full hover:bg-red-900 transition">Delete</button>
-                        </div>
-                      </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {products.map((prod) => (
+                      <ItemCard
+                        key={prod.id}
+                        title={prod.name}
+                        subtitle={`$${prod.price}`}
+                        image={prod.images?.[0]}
+                        onEdit={() => openModal("product", prod)}
+                      />
                     ))}
                   </div>
                 </div>
               )}
             </div>
           )}
-
-          {/* ... other tabs same ... */}
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Modal - Universal (Add/Edit for both) */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-8">
-          <div className="bg-gray-900 rounded-3xl border border-gray-800 p-12 max-w-2xl w-full">
-            <div className="flex justify-between items-center mb-8">
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-8 backdrop-blur-sm">
+          <div className="bg-gray-900 rounded-[40px] border border-gray-800 p-12 max-w-2xl w-full">
+            <div className="flex justify-between items-center mb-10">
               <h2 className="text-4xl font-black">
-                {editingItem ? 'Edit' : 'Add'} {modalType === 'category' ? 'Category' : 'Product'}
+                {editingItem ? "Edit" : "Add"} {modalType}
               </h2>
-              <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-gray-800 rounded-full">
-                <X size={32} />
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="p-3 hover:bg-gray-800 rounded-full transition"
+              >
+                <X size={28} />
               </button>
             </div>
-
-            <div className="space-y-8">
+            <div className="space-y-6">
               <input
                 type="text"
-                placeholder={modalType === 'category' ? 'Category Name' : 'Product Name'}
+                placeholder={`${modalType} Name`}
                 value={formData.name}
-                onChange={e => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-6 py-4 bg-gray-800 rounded-xl text-xl"
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                className="w-full px-6 py-5 bg-black border border-gray-800 rounded-2xl text-xl outline-none focus:border-white transition"
               />
 
-              {modalType === 'product' && (
+              {modalType === "product" && (
                 <>
                   <input
                     type="number"
                     placeholder="Price"
                     value={formData.price}
-                    onChange={e => setFormData({ ...formData, price: e.target.value })}
-                    className="w-full px-6 py-4 bg-gray-800 rounded-xl text-xl"
+                    onChange={(e) =>
+                      setFormData({ ...formData, price: e.target.value })
+                    }
+                    className="w-full px-6 py-5 bg-black border border-gray-800 rounded-2xl text-xl outline-none focus:border-white transition"
                   />
                   <select
                     value={formData.categoryId}
-                    onChange={e => setFormData({ ...formData, categoryId: e.target.value })}
-                    className="w-full px-6 py-4 bg-gray-800 rounded-xl text-xl"
+                    onChange={(e) =>
+                      setFormData({ ...formData, categoryId: e.target.value })
+                    }
+                    className="w-full px-6 py-5 bg-black border border-gray-800 rounded-2xl text-xl outline-none focus:border-white transition"
                   >
                     <option value="">Select Category</option>
-                    {categories.map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
                     ))}
                   </select>
                 </>
               )}
 
-              {/* Image Upload */}
-              <div className="md:col-span-2">
-                <label className="block text-xl mb-4">Upload Images</label>
-                <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-gray-600 rounded-3xl cursor-pointer hover:border-white transition">
-                  <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="hidden" />
-                  <Upload size={48} className="mb-4" />
-                  <p>Click to upload multiple images</p>
-                </label>
-
-                {previewImages.length > 0 && (
-                  <div className="grid grid-cols-4 gap-4 mt-8">
-                    {previewImages.map((src, i) => (
-                      <img key={i} src={src} alt="preview" className="w-full h-32 object-cover rounded-xl" />
-                    ))}
-                  </div>
-                )}
+              <div className="border-2 border-dashed border-gray-800 rounded-3xl p-10 text-center cursor-pointer hover:border-gray-600 transition">
+                <p className="text-gray-500 mb-2">
+                  Image URL (আপাতত URL ইনপুট দিন)
+                </p>
+                <input
+                  type="text"
+                  placeholder="https://image-url.com"
+                  onChange={(e) =>
+                    setFormData({ ...formData, images: [e.target.value] })
+                  }
+                  className="w-full px-4 py-3 bg-black border border-gray-800 rounded-xl outline-none"
+                />
               </div>
 
-              <div className="flex gap-8">
+              <div className="flex gap-4 pt-4">
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 py-4 border border-gray-600 rounded-full hover:bg-gray-800 transition"
+                  className="flex-1 py-5 border border-gray-800 rounded-full font-bold hover:bg-gray-800 transition"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSave}
-                  className="flex-1 py-4 bg-white text-black font-bold rounded-full hover:scale-105 transition"
+                  disabled={loading}
+                  className="flex-1 py-5 bg-white text-black rounded-full font-bold hover:scale-105 transition disabled:opacity-50"
                 >
-                  Save
+                  {loading ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             </div>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// Sub-Components
+function SidebarItem({ icon, label, active, onClick }: any) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 ${
+        active
+          ? "bg-white text-black font-bold scale-105 shadow-xl shadow-white/10"
+          : "text-gray-400 hover:text-white hover:bg-gray-900"
+      }`}
+    >
+      {icon} <span className="text-lg">{label}</span>
+    </button>
+  );
+}
+
+function ItemCard({ title, subtitle, image, onEdit }: any) {
+  return (
+    <div className="group relative bg-gray-900/30 border border-gray-800 rounded-[32px] overflow-hidden p-4 hover:border-white/50 transition-all duration-500">
+      <div className="aspect-square rounded-[24px] overflow-hidden bg-black mb-6 relative">
+        <Image
+          src={image || "/poster.jpg"}
+          alt={title}
+          fill
+          className="object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+        />
+      </div>
+      <div className="px-2 pb-2">
+        <h4 className="text-2xl font-black">{title}</h4>
+        {subtitle && <p className="text-gray-500 font-bold mt-1">{subtitle}</p>}
+        <div className="flex gap-3 mt-6">
+          <button
+            onClick={onEdit}
+            className="flex-1 py-3 bg-white/10 hover:bg-white hover:text-black rounded-full transition-all duration-300 font-bold flex items-center justify-center gap-2"
+          >
+            <Edit size={16} /> Edit
+          </button>
+          <button className="p-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-full transition-all duration-300">
+            <Trash2 size={20} />
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

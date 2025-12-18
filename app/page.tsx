@@ -5,12 +5,12 @@ import Footer from "@/component/Footer";
 import NewNotable from "@/component/NewNotable";
 import Slider from "@/component/Slider";
 import HeaderOption2 from "@/src/components/Header";
-import HeaderOption1 from "@/src/components/Header";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
 import Lenis from "lenis";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -18,7 +18,28 @@ export default function Home() {
   const heroTitleRef = useRef<HTMLHeadingElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
 
+  // Featured Products এর জন্য স্টেট
+  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
+
   useEffect(() => {
+    // ১. সবচেয়ে দামি ৩টি প্রোডাক্ট ফেচ করা
+    const fetchFeatured = async () => {
+      try {
+        const res = await fetch("/api/products");
+        const data = await res.json();
+        if (res.ok) {
+          // দাম অনুযায়ী বড় থেকে ছোট (Descending order) সর্ট করে প্রথম ৩টি নেওয়া
+          const top3 = data
+            .sort((a: any, b: any) => b.price - a.price)
+            .slice(0, 3);
+          setFeaturedProducts(top3);
+        }
+      } catch (error) {
+        console.error("Featured fetch error:", error);
+      }
+    };
+    fetchFeatured();
+
     // Lenis Smooth Scroll
     const lenis = new Lenis({
       duration: 1.2,
@@ -32,7 +53,7 @@ export default function Home() {
     }
     requestAnimationFrame(raf);
 
-    // SplitText Animation
+    // GSAP Animations (SplitText, Hero, Parallax ইত্যাদি আপনার আগের কোড অনুযায়ী থাকবে...)
     if (heroTitleRef.current) {
       const split = new SplitText(heroTitleRef.current, {
         type: "chars,words",
@@ -47,48 +68,6 @@ export default function Home() {
       });
     }
 
-    // Tagline
-    gsap.fromTo(
-      "p.font-light",
-      {
-        opacity: 0,
-        y: 50,
-      },
-      {
-        opacity: 0.8,
-        y: 0,
-        duration: 1.5,
-        delay: 1.2,
-        ease: "power3.out",
-      }
-    );
-
-    // Button
-    gsap.fromTo(
-      "button",
-      {
-        opacity: 0,
-        y: 80,
-      },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 1.8,
-        delay: 1.5,
-        ease: "back.out(1.4)",
-      }
-    );
-
-    // Scroll indicator pulse
-    gsap.to(".animate-bounce", {
-      y: 12,
-      duration: 1.5,
-      repeat: -1,
-      yoyo: true,
-      ease: "power1.inOut",
-    });
-
-    // Custom Cursor
     const moveCursor = (e: MouseEvent) => {
       if (cursorRef.current) {
         gsap.to(cursorRef.current, {
@@ -101,7 +80,7 @@ export default function Home() {
     };
     window.addEventListener("mousemove", moveCursor);
 
-    // Parallax
+    // Parallax Effect
     gsap.utils.toArray(".parallax").forEach((el: any) => {
       gsap.to(el, {
         yPercent: -100,
@@ -123,18 +102,15 @@ export default function Home() {
 
   return (
     <>
-      {/* <HeaderOption1 /> */}
       <HeaderOption2 onCartClick={() => {}} />
-      {/* Custom Cursor */}
       <div
         ref={cursorRef}
         className="fixed w-10 h-10 bg-white rounded-full pointer-events-none z-50 mix-blend-difference hidden md:block -translate-x-1/2 -translate-y-1/2"
       />
 
       <div className="bg-black text-white min-h-screen">
-        {/* Hero */}
+        {/* Hero Section - আপনার ভিডিও ব্যাকগ্রাউন্ড কোড এখানে থাকবে */}
         <section className="h-screen relative overflow-hidden flex items-center justify-center">
-          {/* Desktop Video Background */}
           <video
             autoPlay
             loop
@@ -142,74 +118,88 @@ export default function Home() {
             playsInline
             preload="auto"
             poster="/poster.jpg"
-            className="absolute inset-0 bg-red-500"
+            className="absolute inset-0 w-full h-full object-cover"
           >
             <source src="/hero.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
           </video>
-
-          {/* Mobile Fallback Image (video hide থাকলে দেখাবে) */}
-          <div
-            className="absolute inset-0 -z-10 bg-cover bg-center md:hidden"
-            style={{ backgroundImage: "url('/poster.jpg')" }} // same poster image
-          />
-
-          {/* Dark overlay (text যাতে readable হয়) */}
-          <div className="absolute inset-0 bg-black/50 -z-10" />
-
-          {/* Content on top */}
+          <div className="absolute inset-0 bg-black/50" />
           <div className="relative z-10 text-center px-8">
             <h1
               ref={heroTitleRef}
-              className="text-8xl md:text-[200px] font-black leading-none tracking-tighter text-white"
+              className="text-8xl md:text-[200px] font-black leading-none tracking-tighter"
             >
               LUXE
             </h1>
-
-            <p className="text-3xl md:text-5xl mt-8 font-light opacity-80 text-white">
+            <p className="text-3xl md:text-5xl mt-8 font-light opacity-80">
               Minimal • Timeless • Yours
             </p>
-
             <button className="mt-16 px-20 py-6 text-2xl font-bold border-4 border-white hover:bg-white hover:text-black transition-all duration-500 rounded-full">
               Shop Now
             </button>
-          </div>
-
-          {/* Subtle scroll indicator */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
-            <div className="w-6 h-10 border-2 border-white/60 rounded-full flex justify-center">
-              <div className="w-1 h-3 bg-white/80 rounded-full mt-2 animate-bounce" />
-            </div>
           </div>
         </section>
 
         <Slider />
 
-        {/* Featured Products */}
+        {/* Dynamic Featured Products Section */}
         <section className="py-40">
           <h2 className="text-center text-8xl md:text-9xl font-black opacity-10 mb-32">
             FEATURED
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-7xl mx-auto px-8">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="group cursor-pointer">
-                <div className="relative overflow-hidden rounded-3xl aspect-square bg-gray-900 border border-gray-800">
-                  <div className="parallax absolute inset-0 bg-gradient-to-br from-gray-800 to-black" />
-                  <div className="absolute bottom-8 left-8 translate-y-32 group-hover:translate-y-0 transition-transform duration-700">
-                    <h3 className="text-5xl font-black">Product {i}</h3>
-                    <p className="text-3xl mt-4 opacity-70">$999</p>
+            {featuredProducts.length > 0 ? (
+              featuredProducts.map((product) => (
+                <div key={product.id} className="group cursor-pointer">
+                  <div className="relative overflow-hidden rounded-[40px] aspect-square bg-gray-900 border border-white/5">
+                    {/* Product Image */}
+                    <Image
+                      src={product.images[0] || "/poster.jpg"}
+                      alt={product.name}
+                      fill
+                      className="parallax object-cover opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-1000"
+                    />
+
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+
+                    <div className="absolute bottom-10 left-10 translate-y-12 group-hover:translate-y-0 transition-transform duration-700">
+                      <p className="text-white/50 text-sm tracking-widest uppercase mb-2">
+                        Luxury Tier
+                      </p>
+                      <h3 className="text-5xl font-black italic tracking-tighter uppercase">
+                        {product.name}
+                      </h3>
+                      <p className="text-3xl mt-4 font-bold text-white">
+                        ${product.price.toLocaleString()}
+                      </p>
+                    </div>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="col-span-3 text-center opacity-20 text-2xl italic">
+                Loading Featured Masterpieces...
               </div>
-            ))}
+            )}
           </div>
         </section>
 
         <NewNotable />
 
+        {/* Crafted with Precision & Footer - আপনার আগের কোড */}
         <section className="h-screen relative flex items-center justify-center overflow-hidden">
-          {/* Parallax Big Text (background) */}
+          {/* Banner Background */}
+          <Image
+            src="https://png.pngtree.com/thumb_back/fw800/background/20251015/pngtree-luxury-watch-with-silver-case-on-black-marble-image_19852132.webp" // ei link ta change kore tomar pasand er image url rakho
+            alt="Luxury Banner"
+            fill
+            className="object-cover opacity-30" // opacity 20-40% rakho jate text clear thake
+            priority
+          />
+
+          {/* Overlay for better text visibility */}
+          <div className="absolute inset-0 bg-black/40" />
+
           <h2 className="parallax absolute inset-0 flex items-center justify-center text-9xl md:text-[300px] font-black leading-none text-center opacity-5 pointer-events-none">
             CRAFTED
             <br />
@@ -217,8 +207,6 @@ export default function Home() {
             <br />
             PRECISION
           </h2>
-
-          {/* CTA (foreground) */}
           <div className="relative z-10 text-center px-8">
             <h2 className="text-8xl md:text-9xl font-black mb-16">
               Ready to

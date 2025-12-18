@@ -1,25 +1,33 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-// ১. নির্দিষ্ট প্রোডাক্ট দেখা (Get Single)
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-  try {
-    const id = parseInt(params.id);
-    const product = await prisma.product.findUnique({
-      where: { id },
-      include: { category: true }
-    });
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const productId = parseInt(id);
 
-    if (!product) return NextResponse.json({ error: "Product not found" }, { status: 404 });
-
-    return NextResponse.json(product);
-  } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch product" }, { status: 500 });
+  if (isNaN(productId)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   }
+
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    include: { category: true },
+  });
+
+  if (!product) {
+    return NextResponse.json({ error: "Product not found" }, { status: 404 });
+  }
+
+  return NextResponse.json(product);
 }
 
-// ২. প্রোডাক্ট আপডেট করা (Update)
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     const id = parseInt(params.id);
     const body = await req.json();
@@ -33,8 +41,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         images: body.images,
         categoryId: body.categoryId,
         inStock: body.inStock,
-        featured: body.featured
-      }
+        featured: body.featured,
+      },
     });
 
     return NextResponse.json(updatedProduct);
@@ -43,18 +51,19 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 }
 
-// ৩. প্রোডাক্ট ডিলিট করা (OrderItem হ্যান্ডেল করে)
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   const productId = parseInt(params.id);
 
   try {
-    // ডাটাবেস কনস্ট্যান্ট ঠিক রাখতে আগে এই প্রোডাক্টের সব অর্ডার আইটেম ডিলিট করো
     await prisma.orderItem.deleteMany({
-      where: { productId }
+      where: { productId },
     });
 
     await prisma.product.delete({
-      where: { id: productId }
+      where: { id: productId },
     });
 
     return NextResponse.json({ message: "Product deleted" });
