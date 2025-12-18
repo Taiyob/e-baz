@@ -13,6 +13,8 @@ model User {
   email     String   @unique
   name      String?
   password  String?  
+  resetToken String?
+  resetExpiry DateTime?
   role      Role     @default(USER)
   addresses Address[]
   orders    Order[]

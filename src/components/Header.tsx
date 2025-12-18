@@ -42,16 +42,18 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, UserIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { gsap } from 'gsap';
 import { useCart } from '@/src/lib/cartStore';
+import { useSession, signOut } from "next-auth/react";
 
 export default function HeaderOption2({ onCartClick }: { onCartClick: () => void }) {
   const { getTotalItems } = useCart();
   const cartCount = getTotalItems();
   const [visible, setVisible] = useState(true);
   let lastScrollY = 0;
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -109,6 +111,20 @@ export default function HeaderOption2({ onCartClick }: { onCartClick: () => void
           )}
         </div>
       </button>
+
+      <div className="flex items-center gap-8">
+        {/* User authenticated thakle name dekhabe */}
+        {status === "authenticated" && session?.user && (
+          <div className="flex items-center gap-2 text-sm">
+            <UserIcon size={18} />
+            <span>{session.user.name}</span>
+            <button onClick={() => signOut()} className="ml-4 opacity-50">(LOGOUT)</button>
+          </div>
+        )}
+        
+        {/* ... Cart/Basket icon */}
+      </div>
+
     </header>
   );
 }
