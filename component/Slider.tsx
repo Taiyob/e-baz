@@ -87,7 +87,7 @@ export default function Slider() {
       <div ref={sliderRef} className="flex gap-8 px-8 w-max relative z-10">
         {categories.map((cat) => (
           <Link
-            href={`/product`}
+            href={`/category/${encodeURIComponent(cat.name)}`}
             key={cat?.id}
             className="product-card w-[450px] h-[550px] bg-gray-900 rounded-[40px] overflow-hidden relative group cursor-pointer"
           >

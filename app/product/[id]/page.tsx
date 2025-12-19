@@ -30,7 +30,6 @@ export default function ProductDetails({
   const detailsRef = useRef<HTMLDivElement>(null);
   const { addItem } = useCart();
 
-  // ১. ডাটা ফেচ করা
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -46,7 +45,6 @@ export default function ProductDetails({
     fetchProduct();
   }, [id]);
 
-  // ২. GSAP অ্যানিমেশন (ডাটা লোড হওয়ার পর)
   useEffect(() => {
     if (!loading && product) {
       gsap.fromTo(
@@ -66,7 +64,6 @@ export default function ProductDetails({
     }
   }, [loading, product]);
 
-  // ৩. অ্যাড টু কার্ট অ্যানিমেশন ও লজিক
   const handleAddToCart = () => {
     if (!product) return;
 
@@ -101,7 +98,6 @@ export default function ProductDetails({
           clone.remove();
           gsap.to(basket, { scale: 1.5, duration: 0.2, yoyo: true, repeat: 1 });
 
-          // কার্টে আইটেম অ্যাড করা
           for (let i = 0; i < quantity; i++) {
             addItem({
               id: product.id,
@@ -128,7 +124,7 @@ export default function ProductDetails({
     );
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white pt-24">
       <div className="px-8 py-8">
         <Link
           href="/shop"
