@@ -56,7 +56,6 @@ export default function DashboardPage() {
   });
   const [loading, setLoading] = useState(false);
 
-  // ১. ডাটা লোড করার লজিক
   const fetchData = async () => {
     try {
       const [catRes, prodRes] = await Promise.all([
@@ -94,7 +93,6 @@ export default function DashboardPage() {
     }
   }, [session]);
 
-  // ২. প্রোফাইল ও পাসওয়ার্ড হ্যান্ডলার
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setUpdating(true);
@@ -145,7 +143,6 @@ export default function DashboardPage() {
     }
   };
 
-  // ৩. মোডাল লজিক (Add/Edit)
   const openModal = (type: "category" | "product", item?: any) => {
     setModalType(type);
     setEditingItem(item || null);
@@ -164,7 +161,6 @@ export default function DashboardPage() {
       modalType === "category" ? "/api/category" : "/api/products";
     const method = editingItem ? "PATCH" : "POST";
 
-    // এডিট হলে আইডি পাঠাতে হবে (আপনার API রাউট অনুযায়ী)
     const url = editingItem ? `${endpoint}/${editingItem.id}` : endpoint;
 
     try {
@@ -175,14 +171,14 @@ export default function DashboardPage() {
           ...formData,
           price: Number(formData.price),
           categoryId: Number(formData.categoryId),
-          image: formData.images[0], // ক্যাটাগরির জন্য
+          image: formData.images[0],
         }),
       });
 
       if (res.ok) {
         alert(`${modalType} ${editingItem ? "updated" : "created"}!`);
         setIsModalOpen(false);
-        fetchData(); // লিস্ট রিফ্রেশ
+        fetchData();
       } else {
         alert("Error saving item");
       }
@@ -513,9 +509,7 @@ export default function DashboardPage() {
               )}
 
               <div className="border-2 border-dashed border-gray-800 rounded-3xl p-10 text-center cursor-pointer hover:border-gray-600 transition">
-                <p className="text-gray-500 mb-2">
-                  Image URL (আপাতত URL ইনপুট দিন)
-                </p>
+                <p className="text-gray-500 mb-2">Image URL</p>
                 <input
                   type="text"
                   placeholder="https://image-url.com"

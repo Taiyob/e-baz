@@ -11,6 +11,7 @@ import { SplitText } from "gsap/SplitText";
 import Lenis from "lenis";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -18,17 +19,15 @@ export default function Home() {
   const heroTitleRef = useRef<HTMLHeadingElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
 
-  // Featured Products এর জন্য স্টেট
+  // Featured Products
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
 
   useEffect(() => {
-    // ১. সবচেয়ে দামি ৩টি প্রোডাক্ট ফেচ করা
     const fetchFeatured = async () => {
       try {
         const res = await fetch("/api/products");
         const data = await res.json();
         if (res.ok) {
-          // দাম অনুযায়ী বড় থেকে ছোট (Descending order) সর্ট করে প্রথম ৩টি নেওয়া
           const top3 = data
             .sort((a: any, b: any) => b.price - a.price)
             .slice(0, 3);
@@ -53,7 +52,7 @@ export default function Home() {
     }
     requestAnimationFrame(raf);
 
-    // GSAP Animations (SplitText, Hero, Parallax ইত্যাদি আপনার আগের কোড অনুযায়ী থাকবে...)
+    // GSAP Animations (SplitText, Hero, Parallax ...)
     if (heroTitleRef.current) {
       const split = new SplitText(heroTitleRef.current, {
         type: "chars,words",
@@ -109,7 +108,6 @@ export default function Home() {
       />
 
       <div className="bg-black text-white min-h-screen">
-
         <section className="h-screen relative overflow-hidden flex items-center justify-center">
           <video
             autoPlay
@@ -128,13 +126,13 @@ export default function Home() {
               ref={heroTitleRef}
               className="text-8xl md:text-[200px] font-black leading-none tracking-tighter"
             >
-              LUXE
+              BUZ
             </h1>
             <p className="text-3xl md:text-5xl mt-8 font-light opacity-80">
               Minimal • Timeless • Yours
             </p>
             <button className="mt-16 px-20 py-6 text-2xl font-bold border-4 border-white hover:bg-white hover:text-black transition-all duration-500 rounded-full">
-              Shop Now
+              <Link href={"/shop"}>Shop Now</Link>
             </button>
           </div>
         </section>
@@ -143,14 +141,18 @@ export default function Home() {
 
         {/* Dynamic Featured Products Section */}
         <section className="py-40">
-          <h2 className="text-center text-8xl md:text-9xl font-black opacity-10 mb-32">
+          <h2 className="text-center text-8xl md:text-9xl font-white font-bold mb-32">
             FEATURED
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-7xl mx-auto px-8">
             {featuredProducts.length > 0 ? (
               featuredProducts.map((product) => (
-                <div key={product.id} className="group cursor-pointer">
+                <Link
+                  href={`/product/${product.id}`}
+                  key={product.id}
+                  className="group cursor-pointer"
+                >
                   <div className="relative overflow-hidden rounded-[40px] aspect-square bg-gray-900 border border-white/5">
                     {/* Product Image */}
                     <Image
@@ -174,7 +176,7 @@ export default function Home() {
                       </p>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))
             ) : (
               <div className="col-span-3 text-center opacity-20 text-2xl italic">
@@ -190,10 +192,10 @@ export default function Home() {
         <section className="h-screen relative flex items-center justify-center overflow-hidden">
           {/* Banner Background */}
           <Image
-            src="https://png.pngtree.com/thumb_back/fw800/background/20251015/pngtree-luxury-watch-with-silver-case-on-black-marble-image_19852132.webp" 
+            src="https://png.pngtree.com/thumb_back/fw800/background/20251015/pngtree-luxury-watch-with-silver-case-on-black-marble-image_19852132.webp"
             alt="Luxury Banner"
             fill
-            className="object-cover opacity-30" // opacity 20-40% 
+            className="object-cover opacity-30"
             priority
           />
 
@@ -214,7 +216,7 @@ export default function Home() {
               Elevate?
             </h2>
             <button className="px-24 py-8 text-4xl font-bold bg-white text-black rounded-full hover:scale-110 transition-all duration-500 shadow-2xl">
-              Start Shopping
+              <Link href={"/shop"}>Start Shopping</Link>
             </button>
           </div>
         </section>

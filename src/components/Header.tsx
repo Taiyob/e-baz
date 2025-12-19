@@ -51,7 +51,6 @@ import { gsap } from "gsap";
 import { useCart } from "@/src/lib/cartStore";
 import { useSession, signOut } from "next-auth/react";
 
-
 export default function HeaderOption2() {
   const { data: session, status } = useSession();
   const { items, openDrawer } = useCart();
@@ -96,12 +95,14 @@ export default function HeaderOption2() {
     });
   }, [visible]);
 
-  const userItemsCount = items.filter(item => item.userId === session?.user?.id).length;
+  const userItemsCount = items.filter(
+    (item) => item.userId === session?.user?.id
+  ).length;
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-8 py-6 flex items-center justify-between text-white mix-blend-difference bg-black/30 backdrop-blur-md">
       <Link
-        href="/shop"
+        href="/"
         className="text-lg tracking-wider hover:opacity-70 transition"
       >
         SHOP
@@ -110,11 +111,13 @@ export default function HeaderOption2() {
       <div className="flex items-center gap-6">
         {mounted && status === "authenticated" ? (
           <div className="flex items-center gap-3 text-sm font-medium tracking-widest uppercase">
-            <UserIcon size={18} />
+            <Link href="/dashboard">
+              <UserIcon size={18} />
+            </Link>
             <span>{session?.user?.name}</span>
             <button
               onClick={() => signOut({ redirect: false })}
-              className="ml-2 text-[10px] opacity-50 hover:opacity-100 transition"
+              className="ml-2 text-[10px] opacity-50 hover:opacity-100 transition cursor-pointer"
             >
               (LOGOUT)
             </button>
@@ -123,26 +126,26 @@ export default function HeaderOption2() {
           mounted && (
             <Link
               href="/sign-in"
-              className="text-sm tracking-widest hover:opacity-70 transition"
+              className="text-sm tracking-widest hover:opacity-70 transition cursor-pointer"
             >
               SIGN IN
             </Link>
           )
         )}
 
-      <button 
-        id="basket-icon" 
-        onClick={openDrawer} 
-        className="flex items-center gap-2 relative ..."
-      >
-        BASKET
-        <ShoppingBag size={24} />
-        {userItemsCount > 0 && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 bg-white text-black rounded-full text-[10px] flex items-center justify-center font-black">
-            {userItemsCount}
-          </span>
-        )}
-      </button>
+        <button
+          id="basket-icon"
+          onClick={openDrawer}
+          className="cursor-pointer flex items-center gap-2 relative ..."
+        >
+          BASKET
+          <ShoppingBag size={24} />
+          {userItemsCount > 0 && (
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-white text-black rounded-full text-[10px] flex items-center justify-center font-black">
+              {userItemsCount}
+            </span>
+          )}
+        </button>
       </div>
     </header>
   );

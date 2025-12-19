@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { gsap } from "gsap";
@@ -7,6 +8,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { useCart } from "@/src/lib/cartStore";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -71,21 +73,24 @@ export default function NewNotable() {
   }, [loading, products]);
 
   const handleQuickAdd = async (product: any) => {
-  if (!session) return window.location.href = "/sign-in"; 
+    if (!session) return (window.location.href = "/sign-in");
 
-  addItem({
-    id: product.id,
-    name: product.name,
-    price: product.price,
-    image: product.images?.[0]
-  }, session.user.id); 
+    addItem(
+      {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.images?.[0],
+      },
+      session.user.id
+    );
 
-  await fetch("/api/cart", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ productId: product.id, quantity: 1 })
-  });
-};
+    await fetch("/api/cart", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productId: product.id, quantity: 1 }),
+    });
+  };
 
   const scrollLeft = () => {
     if (sliderRef.current) {
@@ -142,7 +147,8 @@ export default function NewNotable() {
             className="flex gap-12 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-4 pb-12"
           >
             {products.map((product) => (
-              <div
+              <Link
+                href={`/product/${product.id}`}
                 key={product.id}
                 className="product-card flex-shrink-0 w-80 md:w-96 group cursor-pointer snap-start"
               >
@@ -176,12 +182,15 @@ export default function NewNotable() {
                     <p className="text-2xl font-black">
                       ${product.price.toLocaleString()}
                     </p>
-                    <button onClick={() => handleQuickAdd(product)} className="px-8 py-3 bg-white text-black text-sm font-bold rounded-full hover:bg-gray-200 transition">
+                    <button
+                      onClick={() => handleQuickAdd(product)}
+                      className="px-8 py-3 bg-white text-black text-sm font-bold rounded-full hover:bg-gray-200 transition"
+                    >
                       Add to cart
                     </button>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
