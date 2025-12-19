@@ -41,17 +41,17 @@ export async function GET(
   return NextResponse.json(category);
 }
 
-// ২. ক্যাটাগরি আপডেট করা (Update)
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id } = await params;
+    const categoryId = parseInt(id);
     const body = await req.json();
 
     const updatedCategory = await prisma.category.update({
-      where: { id },
+      where: { id: categoryId },
       data: {
         name: body.name,
         image: body.image,
@@ -64,15 +64,14 @@ export async function PATCH(
   }
 }
 
-// ৩. ক্যাটাগরি ডিলিট করা (Delete - Parent/Child Handling)
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const categoryId = parseInt(params.id);
-
   try {
-    // আগে এই ক্যাটাগরির সব প্রোডাক্ট ডিলিট করতে হবে (যেহেতু স্কিমাতে প্রোডাক্টের জন্য ক্যাটাগরি ম্যান্ডেটরি)
+    const { id } = await params;
+    const categoryId = parseInt(id);
+
     await prisma.product.deleteMany({
       where: { categoryId },
     });
@@ -88,3 +87,4 @@ export async function DELETE(
     return NextResponse.json({ error: "Delete failed" }, { status: 500 });
   }
 }
+
