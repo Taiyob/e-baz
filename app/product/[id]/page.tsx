@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { gsap } from "gsap";
@@ -15,6 +16,79 @@ type Product = {
   images: string[];
   category: { name: string };
 };
+
+// Skeleton for Product Details Page
+function ProductSkeleton() {
+  const imageRef = useRef<HTMLDivElement>(null);
+  const detailsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (imageRef.current) {
+      gsap.to(imageRef.current, {
+        opacity: 0.6,
+        scale: 1.02,
+        duration: 1.5,
+        repeat: -1,
+        yoyo: true,
+        ease: "power1.inOut",
+      });
+    }
+
+    if (detailsRef.current) {
+      const children = detailsRef.current.children;
+      gsap.to(children, {
+        opacity: 0.6,
+        duration: 1.5,
+        repeat: -1,
+        yoyo: true,
+        ease: "power1.inOut",
+        stagger: 0.1,
+      });
+    }
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-black text-white pt-24">
+      <div className="px-8 py-8">
+        <div className="flex items-center gap-2 text-lg uppercase tracking-widest font-bold opacity-50">
+          <ArrowLeft size={24} /> Back to Shop
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-8 pb-32">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+          {/* Skeleton Image */}
+          <div
+            ref={imageRef}
+            className="relative aspect-square rounded-[40px] overflow-hidden bg-gray-900/50 border border-white/5"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
+          </div>
+
+          {/* Skeleton Details */}
+          <div ref={detailsRef} className="flex flex-col space-y-8">
+            <div className="h-6 w-32 bg-gray-800 rounded" />
+            <div className="h-16 w-3/4 bg-gray-800 rounded" />
+            <div className="h-12 w-48 bg-gray-800 rounded" />
+            <div className="space-y-4">
+              <div className="h-8 w-full bg-gray-800 rounded" />
+              <div className="h-8 w-full bg-gray-800 rounded" />
+              <div className="h-8 w-3/4 bg-gray-800 rounded" />
+            </div>
+            <div className="flex flex-wrap items-center gap-8">
+              <div className="flex items-center border border-white/20 rounded-full p-2 bg-white/5">
+                <div className="w-12 h-12 bg-gray-800 rounded-full" />
+                <div className="w-12 h-12 bg-gray-800 rounded-full mx-2" />
+                <div className="w-12 h-12 bg-gray-800 rounded-full" />
+              </div>
+              <div className="flex-1 min-w-[200px] py-6 bg-gray-800 rounded-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function ProductDetails({
   params,
@@ -110,18 +184,17 @@ export default function ProductDetails({
     }
   };
 
-  if (loading)
-    return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center text-2xl italic">
-        Loading Masterpiece...
-      </div>
-    );
-  if (!product)
+  if (loading) {
+    return <ProductSkeleton />;
+  }
+
+  if (!product) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center text-2xl">
         Product Not Found
       </div>
     );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white pt-24">

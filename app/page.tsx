@@ -15,6 +15,49 @@ import Link from "next/link";
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
+const FeaturedSkeleton = () => {
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    cardRefs.current.forEach((card) => {
+      if (card) {
+        gsap.to(card, {
+          opacity: 0.7,
+          scale: 1.02,
+          duration: 1.5,
+          repeat: -1,
+          yoyo: true,
+          ease: "power1.inOut",
+        });
+      }
+    });
+  }, []);
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-7xl mx-auto px-8">
+      {[...Array(3)].map((_, i) => (
+        <div
+          key={i}
+          ref={(el) => {
+            cardRefs.current[i] = el;
+          }}
+          className="relative overflow-hidden rounded-[40px] aspect-square bg-gray-900/50 border border-white/5"
+        >
+          {/* Shimmer Effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
+
+          {/* Skeleton Content */}
+          <div className="absolute bottom-10 left-10 space-y-4 w-full">
+            <div className="h-4 w-24 bg-gray-800 rounded-full opacity-50" />
+            <div className="h-10 w-2/3 bg-gray-800 rounded-xl" />
+            <div className="h-8 w-20 bg-gray-800 rounded-lg" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export default function Home() {
   const heroTitleRef = useRef<HTMLHeadingElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
@@ -149,15 +192,15 @@ export default function Home() {
             {featuredProducts.length > 0 ? (
               featuredProducts.map((product) => (
                 <Link
-                  href={`/product/${product.id}`}
-                  key={product.id}
+                  href={`/product/${product?.id}`}
+                  key={product?.id}
                   className="group cursor-pointer"
                 >
                   <div className="relative overflow-hidden rounded-[40px] aspect-square bg-gray-900 border border-white/5">
                     {/* Product Image */}
                     <Image
                       src={product.images[0] || "/poster.jpg"}
-                      alt={product.name}
+                      alt={product?.name}
                       fill
                       className="parallax object-cover opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-1000"
                     />
@@ -169,19 +212,17 @@ export default function Home() {
                         Luxury Tier
                       </p>
                       <h3 className="text-5xl font-black italic tracking-tighter uppercase">
-                        {product.name}
+                        {product?.name}
                       </h3>
                       <p className="text-3xl mt-4 font-bold text-white">
-                        ${product.price.toLocaleString()}
+                        ${product?.price.toLocaleString()}
                       </p>
                     </div>
                   </div>
                 </Link>
               ))
             ) : (
-              <div className="col-span-3 text-center opacity-20 text-2xl italic">
-                Loading Featured Masterpieces...
-              </div>
+              <FeaturedSkeleton />
             )}
           </div>
         </section>

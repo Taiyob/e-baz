@@ -15,6 +15,28 @@ type Category = {
   image: string | null;
 };
 
+// --- Skeleton Component ---
+const SliderSkeleton = () => (
+  <div className="h-screen flex items-center bg-black overflow-hidden px-8">
+    <div className="flex gap-8 w-max">
+      {[...Array(4)].map((_, i) => (
+        <div
+          key={i}
+          className="w-[450px] h-[550px] bg-gray-900/50 rounded-[40px] relative overflow-hidden animate-pulse border border-white/5"
+        >
+          {/* Shimmer Effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
+
+          <div className="absolute bottom-12 left-12 space-y-4">
+            <div className="h-8 w-48 bg-gray-800 rounded-lg" />
+            <div className="h-4 w-32 bg-gray-800/50 rounded-lg" />
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 export default function Slider() {
   const sliderRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -30,7 +52,7 @@ export default function Slider() {
       } catch (error) {
         console.error("Failed to fetch categories:", error);
       } finally {
-        setLoading(false);
+        setTimeout(() => setLoading(false), 500);
       }
     };
     fetchCategories();
@@ -71,12 +93,7 @@ export default function Slider() {
     };
   }, [loading, categories]);
 
-  if (loading)
-    return (
-      <div className="h-screen bg-black flex items-center justify-center text-white">
-        Loading Collections...
-      </div>
-    );
+  if (loading) return <SliderSkeleton />;
 
   return (
     <section

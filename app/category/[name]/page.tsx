@@ -1,10 +1,44 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { gsap } from "gsap";
+
+gsap.registerPlugin();
+
+// Skeleton Product Card (exact match with your design)
+function SkeletonProductCard() {
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (cardRef.current) {
+      gsap.to(cardRef.current, {
+        opacity: 0.6,
+        scale: 1.02,
+        duration: 1.5,
+        repeat: -1,
+        yoyo: true,
+        ease: "power1.inOut",
+      });
+    }
+  }, []);
+
+  return (
+    <div ref={cardRef} className="group">
+      <div className="relative aspect-[4/5] rounded-[40px] overflow-hidden bg-gray-900/50 border border-white/5 mb-6">
+        {/* Image placeholder with shimmer */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
+      </div>
+      {/* Title placeholder */}
+      <div className="h-10 w-3/4 bg-gray-800 rounded mb-2" />
+      {/* Price placeholder */}
+      <div className="h-6 w-24 bg-gray-800 rounded" />
+    </div>
+  );
+}
 
 export default function CategoryPage({
   params,
@@ -34,13 +68,6 @@ export default function CategoryPage({
     fetchCategoryProducts();
   }, [categoryName]);
 
-  if (loading)
-    return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center italic text-4xl">
-        Exploring {categoryName}...
-      </div>
-    );
-
   return (
     <div className="min-h-screen bg-black text-white pt-24 px-8 md:px-16">
       <Link
@@ -61,29 +88,36 @@ export default function CategoryPage({
 
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-          {products.map((product) => (
-            <Link
-              href={`/product/${product.id}`}
-              key={product.id}
-              className="group"
-            >
-              <div className="relative aspect-[4/5] rounded-[40px] overflow-hidden bg-gray-900 border border-white/5 mb-6">
-                <Image
-                  src={product.images?.[0] || "/poster.jpg"}
-                  alt={product.name}
-                  fill
-                  className="object-cover opacity-80 group-hover:scale-110 transition-transform duration-1000"
-                />
-              </div>
-              <h3 className="text-3xl font-black italic uppercase tracking-tighter">
-                {product.name}
-              </h3>
-              <p className="text-xl font-bold opacity-60">${product.price}</p>
-            </Link>
-          ))}
+          {loading
+            ? // 6 ta skeleton card (tumar grid er moto)
+              Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonProductCard key={i} />
+              ))
+            : products.map((product) => (
+                <Link
+                  href={`/product/${product.id}`}
+                  key={product.id}
+                  className="group"
+                >
+                  <div className="relative aspect-[4/5] rounded-[40px] overflow-hidden bg-gray-900 border border-white/5 mb-6">
+                    <Image
+                      src={product.images?.[0] || "/poster.jpg"}
+                      alt={product.name}
+                      fill
+                      className="object-cover opacity-80 group-hover:scale-110 transition-transform duration-1000"
+                    />
+                  </div>
+                  <h3 className="text-3xl font-black italic uppercase tracking-tighter">
+                    {product.name}
+                  </h3>
+                  <p className="text-xl font-bold opacity-60">
+                    ${product.price}
+                  </p>
+                </Link>
+              ))}
         </div>
 
-        {products.length === 0 && (
+        {!loading && products.length === 0 && (
           <div className="text-center py-20 opacity-20 text-2xl italic">
             No pieces found in this collection yet.
           </div>

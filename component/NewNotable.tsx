@@ -23,6 +23,57 @@ type Product = {
   };
 };
 
+// Skeleton Card Component (tumar original card er exact match)
+function SkeletonCard() {
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (cardRef.current) {
+      gsap.to(cardRef.current, {
+        opacity: 0.6,
+        scale: 1.02,
+        duration: 1.5,
+        repeat: -1,
+        yoyo: true,
+        ease: "power1.inOut",
+      });
+    }
+  }, []);
+
+  return (
+    <div
+      ref={cardRef}
+      className="flex-shrink-0 w-80 md:w-96 group cursor-pointer snap-start"
+    >
+      <div className="relative aspect-[3/4] rounded-[40px] overflow-hidden bg-gray-900/50 border border-white/5">
+        {/* Image placeholder */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-800/40 via-gray-900/40 to-black/40 animate-pulse" />
+
+        {/* Category badge placeholder */}
+        <div className="absolute top-6 left-6 px-5 py-2 bg-gray-700/50 backdrop-blur-md w-24 h-8 rounded-full" />
+
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
+      </div>
+
+      <div className="mt-10 space-y-4">
+        {/* Title placeholder */}
+        <div className="w-3/4 h-10 bg-gray-700 rounded" />
+
+        {/* Description placeholder */}
+        <div className="w-full h-5 bg-gray-700 rounded" />
+        <div className="w-3/4 h-5 bg-gray-700 rounded" />
+
+        {/* Price + Button placeholder */}
+        <div className="pt-4 flex items-center justify-between border-t border-white/10">
+          <div className="w-24 h-8 bg-gray-700 rounded" />
+          <div className="w-32 h-10 bg-gray-700 rounded-full" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function NewNotable() {
   const containerRef = useRef<HTMLDivElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
@@ -104,13 +155,6 @@ export default function NewNotable() {
     }
   };
 
-  if (loading)
-    return (
-      <div className="py-32 bg-black text-center text-white italic opacity-50">
-        Loading Latest Arrivals...
-      </div>
-    );
-
   return (
     <section
       ref={containerRef}
@@ -146,52 +190,55 @@ export default function NewNotable() {
             ref={sliderRef}
             className="flex gap-12 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-4 pb-12"
           >
-            {products.map((product) => (
-              <Link
-                href={`/product/${product.id}`}
-                key={product.id}
-                className="product-card flex-shrink-0 w-80 md:w-96 group cursor-pointer snap-start"
-              >
-                <div className="relative aspect-[3/4] rounded-[40px] overflow-hidden bg-gray-900 border border-white/5">
-                  {/* Product Image */}
-                  <Image
-                    src={product.images[0] || "/poster.jpg"}
-                    alt={product.name}
-                    fill
-                    className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-1000"
-                  />
+            {loading
+              ? // 6 ta skeleton card (tumar slice(0,6) er moto)
+                Array.from({ length: 6 }).map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))
+              : products.map((product) => (
+                  <Link
+                    href={`/product/${product.id}`}
+                    key={product.id}
+                    className="product-card flex-shrink-0 w-80 md:w-96 group cursor-pointer snap-start"
+                  >
+                    <div className="relative aspect-[3/4] rounded-[40px] overflow-hidden bg-gray-900 border border-white/5">
+                      <Image
+                        src={product.images[0] || "/poster.jpg"}
+                        alt={product.name}
+                        fill
+                        className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-1000"
+                      />
 
-                  {/* Category Badge */}
-                  <span className="absolute top-6 left-6 px-5 py-2 bg-black/50 backdrop-blur-md text-xs font-bold rounded-full border border-white/10 uppercase tracking-widest">
-                    {product.category.name}
-                  </span>
+                      <span className="absolute top-6 left-6 px-5 py-2 bg-black/50 backdrop-blur-md text-xs font-bold rounded-full border border-white/10 uppercase tracking-widest">
+                        {product.category.name}
+                      </span>
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
-                </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
+                    </div>
 
-                <div className="mt-10 space-y-4">
-                  <h3 className="text-3xl font-black group-hover:text-gray-400 transition-colors">
-                    {product.name}
-                  </h3>
-                  <p className="text-lg opacity-50 line-clamp-2 font-light leading-relaxed">
-                    {product.description ||
-                      "No description available for this formulation."}
-                  </p>
+                    <div className="mt-10 space-y-4">
+                      <h3 className="text-3xl font-black group-hover:text-gray-400 transition-colors">
+                        {product.name}
+                      </h3>
+                      <p className="text-lg opacity-50 line-clamp-2 font-light leading-relaxed">
+                        {product.description ||
+                          "No description available for this formulation."}
+                      </p>
 
-                  <div className="pt-4 flex items-center justify-between border-t border-white/10">
-                    <p className="text-2xl font-black">
-                      ${product.price.toLocaleString()}
-                    </p>
-                    <button
-                      onClick={() => handleQuickAdd(product)}
-                      className="px-8 py-3 bg-white text-black text-sm font-bold rounded-full hover:bg-gray-200 transition"
-                    >
-                      Add to cart
-                    </button>
-                  </div>
-                </div>
-              </Link>
-            ))}
+                      <div className="pt-4 flex items-center justify-between border-t border-white/10">
+                        <p className="text-2xl font-black">
+                          ${product.price.toLocaleString()}
+                        </p>
+                        <button
+                          onClick={() => handleQuickAdd(product)}
+                          className="px-8 py-3 bg-white text-black text-sm font-bold rounded-full hover:bg-gray-200 transition"
+                        >
+                          Add to cart
+                        </button>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
           </div>
         </div>
       </div>
