@@ -132,7 +132,7 @@ export default function HeaderOption2() {
 
       <button 
         id="basket-icon" 
-        onClick={openDrawer} // স্টোর থেকে সরাসরি কল
+        onClick={openDrawer} 
         className="flex items-center gap-2 relative ..."
       >
         BASKET

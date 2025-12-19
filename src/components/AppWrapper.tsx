@@ -12,21 +12,27 @@ import { useCart } from '../lib/cartStore';
 
   useEffect(() => {
     if (session?.user) {
-      fetch("/api/cart")
-        .then(res => res.json())
-        .then(data => {
-          if (Array.isArray(data)) {
+      const syncCart = async () => {
+        try {
+          const res = await fetch("/api/cart");
+          const data = await res.json();
+          
+          if (res.ok && Array.isArray(data)) {
             const formattedItems = data.map((item: any) => ({
               id: item.product.id,
               name: item.product.name,
               price: item.product.price,
               image: item.product.images?.[0],
-              quantity: item.quantity
+              quantity: item.quantity,
+              userId: session.user.id 
             }));
             setItems(formattedItems);
           }
-        })
-        .catch(err => console.error("Cart fetch error:", err));
+        } catch (err) {
+          console.error("Cart fetch error:", err);
+        }
+      };
+      syncCart();
     } else {
       clearCart();
     }
