@@ -1,12 +1,13 @@
-'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import { SessionProvider, useSession } from "next-auth/react";
-import HeaderOption2 from '@/src/components/Header';
-import CartDrawer from '@/src/components/CartDrawer';
-import { useCart } from '../lib/cartStore';
+import HeaderOption2 from "@/src/components/Header";
+import CartDrawer from "@/src/components/CartDrawer";
+import { useCart } from "../lib/cartStore";
 
-  function CartSync({ children }: { children: React.ReactNode }) {
+function CartSync({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const { setItems, clearCart } = useCart();
 
@@ -16,7 +17,7 @@ import { useCart } from '../lib/cartStore';
         try {
           const res = await fetch("/api/cart");
           const data = await res.json();
-          
+
           if (res.ok && Array.isArray(data)) {
             const formattedItems = data.map((item: any) => ({
               id: item.product.id,
@@ -24,7 +25,7 @@ import { useCart } from '../lib/cartStore';
               price: item.product.price,
               image: item.product.images?.[0],
               quantity: item.quantity,
-              userId: session.user.id 
+              userId: session.user.id,
             }));
             setItems(formattedItems);
           }
@@ -41,17 +42,17 @@ import { useCart } from '../lib/cartStore';
   return <>{children}</>;
 }
 
-export default function AppWrapper({ children }: { children: React.ReactNode }) {
+export default function AppWrapper({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <SessionProvider>
-      <CartSync>
-        {children}
-      </CartSync>
+      <CartSync>{children}</CartSync>
     </SessionProvider>
     /* <HeaderOption2 onCartClick={() => setIsCartOpen(true)} />
       {children}
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} /> */
   );
 }
-
-
