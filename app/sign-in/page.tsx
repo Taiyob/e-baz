@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Mail, Lock, User, ArrowRight } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -30,9 +31,10 @@ export default function AuthPage() {
       });
 
       if (res?.error) {
-        alert("Invalid Credentials");
+        toast.error(`Invalid Credentials`);
       } else {
         router.push("/dashboard");
+        toast.success(`login successfully`);
       }
     } else {
       if (formData.password !== formData.confirmPassword) {
@@ -54,10 +56,10 @@ export default function AuthPage() {
       const data = await res.json();
 
       if (res.ok) {
-        alert("Registration Successful! Please Login.");
+        toast.success(`Registration Successful! Please Login.`);
         setIsLogin(true);
       } else {
-        alert(data.error || "Registration failed");
+        toast.error(`${data.error || "Registration failed"}`);
       }
     }
     setLoading(false);
@@ -100,7 +102,7 @@ export default function AuthPage() {
         <div className="flex justify-center mb-12">
           <button
             onClick={() => setIsLogin(true)}
-            className={`px-8 py-3 text-lg font-bold transition ${
+            className={`px-8 py-3 cursor-pointer text-lg font-bold transition ${
               isLogin ? "text-white" : "text-gray-500"
             }`}
           >
@@ -109,7 +111,7 @@ export default function AuthPage() {
           <span className="mx-8 text-gray-600">/</span>
           <button
             onClick={() => setIsLogin(false)}
-            className={`px-8 py-3 text-lg font-bold transition ${
+            className={`px-8 py-3 cursor-pointer text-lg font-bold transition ${
               !isLogin ? "text-white" : "text-gray-500"
             }`}
           >
@@ -178,7 +180,7 @@ export default function AuthPage() {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full py-6 bg-white text-black text-2xl font-bold rounded-full hover:scale-105 transition-all duration-500 flex items-center justify-center gap-4 group disabled:opacity-50"
+            className="w-full py-6 cursor-pointer bg-white text-black text-2xl font-bold rounded-full hover:scale-105 transition-all duration-500 flex items-center justify-center gap-4 group disabled:opacity-50"
           >
             {loading ? "Processing..." : isLogin ? "Sign In" : "Create Account"}
             {!loading && (
