@@ -5,6 +5,7 @@ import { X, Plus, Minus, Trash2, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import { gsap } from "gsap";
 import { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 
 export default function CartDrawer() {
   const {
@@ -16,6 +17,7 @@ export default function CartDrawer() {
     getTotalPrice,
   } = useCart();
   const drawerRef = useRef(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (isDrawerOpen) {
@@ -160,9 +162,8 @@ export default function CartDrawer() {
             <button
               className="w-full py-6 cursor-pointer bg-white text-black font-black uppercase tracking-[0.2em] rounded-full hover:scale-[1.02] transition-all duration-500 shadow-[0_0_40px_rgba(255,255,255,0.1)]"
               onClick={() => {
-                alert("Redirecting to payment...");
-                // এখানে আপনার পেমেন্ট বা চেকআউট পেজের পাথ দিবেন
-                // window.location.href = "/checkout";
+                closeDrawer();
+                router.push("/checkout");
               }}
             >
               Proceed to Checkout

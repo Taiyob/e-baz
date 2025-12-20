@@ -10,18 +10,18 @@ datasource db {
 
 // User model (customer + admin)
 model User {
-  id          Int       @id @default(autoincrement())
-  email       String    @unique
+  id          Int        @id @default(autoincrement())
+  email       String     @unique
   name        String?
   password    String?
   resetToken  String?
   resetExpiry DateTime?
-  role        Role      @default(USER)
+  role        Role       @default(USER)
   addresses   Address[]
   orders      Order[]
   cartItems   CartItem[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
   @@map("users")
 }
@@ -89,11 +89,16 @@ model Order {
   userId     Int
   totalPrice Float
   status     OrderStatus @default(PENDING)
-  items      OrderItem[]
-  address    Address?    @relation(fields: [addressId], references: [id])
-  addressId  Int?
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+
+  paymentStatus PaymentStatus @default(UNPAID)
+  transactionId String?       @unique
+  paymentMethod String?
+
+  items     OrderItem[]
+  address   Address?    @relation(fields: [addressId], references: [id])
+  addressId Int?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 
   @@map("orders")
 }
@@ -104,6 +109,13 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  FAILED
+  REFUNDED
 }
 
 // OrderItem model
@@ -120,10 +132,10 @@ model OrderItem {
 }
 
 model CartItem {
-  id        Int      @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   userId    Int
   productId Int
-  quantity  Int      @default(1)
-  user      User     @relation(fields: [userId], references: [id])
-  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int     @default(1)
+  user      User    @relation(fields: [userId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
 }
