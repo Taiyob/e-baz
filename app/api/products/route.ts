@@ -1,8 +1,6 @@
-// api/products
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// Sob product list kora
 export async function GET() {
   const products = await prisma.product.findMany({
     include: { category: true },
@@ -10,7 +8,6 @@ export async function GET() {
   return NextResponse.json(products);
 }
 
-// Notun product add kora
 export async function POST(req: Request) {
   try {
     const { name, price, description, images, categoryId } = await req.json();

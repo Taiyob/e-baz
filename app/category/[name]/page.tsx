@@ -28,9 +28,9 @@ function SkeletonProductCard() {
 
   return (
     <div ref={cardRef} className="group">
-      <div className="relative aspect-[4/5] rounded-[40px] overflow-hidden bg-gray-900/50 border border-white/5 mb-6">
+      <div className="relative aspect-4/5 rounded-[40px] overflow-hidden bg-gray-900/50 border border-white/5 mb-6">
         {/* Image placeholder with shimmer */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
+        <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
       </div>
       {/* Title placeholder */}
       <div className="h-10 w-3/4 bg-gray-800 rounded mb-2" />
@@ -99,7 +99,7 @@ export default function CategoryPage({
                   key={product.id}
                   className="group"
                 >
-                  <div className="relative aspect-[4/5] rounded-[40px] overflow-hidden bg-gray-900 border border-white/5 mb-6">
+                  <div className="relative aspect-4/5 rounded-[40px] overflow-hidden bg-gray-900 border border-white/5 mb-6">
                     <Image
                       src={product.images?.[0] || "/poster.jpg"}
                       alt={product.name}

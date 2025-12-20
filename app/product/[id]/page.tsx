@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { gsap } from "gsap";
 import { useEffect, useRef, useState, use } from "react";
-import { ArrowLeft, Plus, Minus } from "lucide-react";
+import { ArrowLeft, Plus, Minus, Maximize2 } from "lucide-react";
 import { useCart } from "@/src/lib/cartStore";
 import Link from "next/link";
 import Image from "next/image";
@@ -62,7 +61,7 @@ function ProductSkeleton() {
             ref={imageRef}
             className="relative aspect-square rounded-[40px] overflow-hidden bg-gray-900/50 border border-white/5"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
+            <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
           </div>
 
           {/* Skeleton Details */}
@@ -81,7 +80,7 @@ function ProductSkeleton() {
                 <div className="w-12 h-12 bg-gray-800 rounded-full mx-2" />
                 <div className="w-12 h-12 bg-gray-800 rounded-full" />
               </div>
-              <div className="flex-1 min-w-[200px] py-6 bg-gray-800 rounded-full" />
+              <div className="flex-1 min-w-50 py-6 bg-gray-800 rounded-full" />
             </div>
           </div>
         </div>
@@ -99,6 +98,9 @@ export default function ProductDetails({
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+
+  const [zoomPos, setZoomPos] = useState({ x: 0, y: 0 });
+  const [isHovered, setIsHovered] = useState(false);
 
   const imageRef = useRef<HTMLDivElement>(null);
   const detailsRef = useRef<HTMLDivElement>(null);
@@ -137,6 +139,14 @@ export default function ProductDetails({
       }
     }
   }, [loading, product]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const { left, top, width, height } =
+      e.currentTarget.getBoundingClientRect();
+    const x = ((e.pageX - left) / width) * 100;
+    const y = ((e.pageY - window.scrollY - top) / height) * 100;
+    setZoomPos({ x, y });
+  };
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -209,20 +219,33 @@ export default function ProductDetails({
 
       <div className="max-w-7xl mx-auto px-8 pb-32">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
-          {/* Product Image */}
           <div
             ref={imageRef}
-            className="relative aspect-square rounded-[40px] overflow-hidden bg-gray-900 border border-white/5"
+            className="relative aspect-square rounded-[40px] overflow-hidden bg-gray-900 border border-white/5 cursor-zoom-in group"
+            onMouseMove={handleMouseMove}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
           >
-            <Image
-              src={product.images[0] || "/poster.jpg"}
-              alt={product.name}
-              fill
-              className="object-cover opacity-80"
-            />
+            <div
+              className="relative w-full h-full transition-transform duration-500 ease-out"
+              style={{
+                transform: isHovered ? "scale(2)" : "scale(1)",
+                transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
+              }}
+            >
+              <Image
+                src={product.images[0] || "/poster.jpg"}
+                alt={product.name}
+                fill
+                className="object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+              />
+            </div>
+
+            <div className="absolute top-6 right-6 p-3 bg-black/40 backdrop-blur-md rounded-full opacity-100 group-hover:opacity-0 transition-opacity">
+              <Maximize2 size={20} className="text-white/60" />
+            </div>
           </div>
 
-          {/* Product Details */}
           <div ref={detailsRef} className="flex flex-col">
             <p className="text-white/40 uppercase tracking-[0.3em] font-bold mb-4">
               {product.category.name}
@@ -240,7 +263,6 @@ export default function ProductDetails({
                 "A timeless creation designed for those who appreciate the finer things in life. Each piece tells a story of craftsmanship."}
             </p>
 
-            {/* Quantity and Add to Cart */}
             <div className="flex flex-wrap items-center gap-8">
               <div className="flex items-center border border-white/20 rounded-full p-2 bg-white/5">
                 <button
@@ -262,7 +284,7 @@ export default function ProductDetails({
 
               <button
                 onClick={handleAddToCart}
-                className="flex-1 min-w-[200px] py-6 text-2xl font-black bg-white text-black rounded-full hover:scale-105 transition-all duration-500 shadow-[0_0_40px_rgba(255,255,255,0.1)] uppercase tracking-widest"
+                className="flex-1 min-w-50 py-6 text-2xl font-black bg-white text-black rounded-full hover:scale-105 transition-all duration-500 shadow-[0_0_40px_rgba(255,255,255,0.1)] uppercase tracking-widest"
               >
                 Add to Basket
               </button>
