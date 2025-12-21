@@ -19,10 +19,27 @@ import {
   Edit,
   Trash2,
   X,
-  Upload,
   Lock,
 } from "lucide-react";
 import { gsap } from "gsap";
+import OrderTable from "@/component/OrderTable";
+
+// --- নতুন Skeleton কম্পোনেন্ট ---
+function ItemSkeleton() {
+  return (
+    <div className="bg-gray-900/30 border border-gray-800 rounded-[32px] p-4 animate-pulse">
+      <div className="aspect-square rounded-[24px] bg-gray-800 mb-6" />
+      <div className="px-2 pb-2 space-y-3">
+        <div className="h-7 bg-gray-800 rounded-md w-3/4" />
+        <div className="h-5 bg-gray-800 rounded-md w-1/4" />
+        <div className="flex gap-3 mt-6">
+          <div className="flex-1 h-12 bg-gray-800 rounded-full" />
+          <div className="w-12 h-12 bg-gray-800 rounded-full" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function DashboardPage() {
   const { data: session, status, update } = useSession();
@@ -42,12 +59,11 @@ export default function DashboardPage() {
   // Items Data States
   const [categories, setCategories] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(false); 
 
   // Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState<"category" | "product">(
-    "category"
-  );
+  const [modalType, setModalType] = useState<"category" | "product">("category");
   const [editingItem, setEditingItem] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -57,7 +73,12 @@ export default function DashboardPage() {
   });
   const [loading, setLoading] = useState(false);
 
+  const [orders, setOrders] = useState<any[]>([]);
+
+  const [addresses, setAddresses] = useState<any[]>([]);
+
   const fetchData = async () => {
+    setIsLoadingData(true); // লোডিং শুরু
     try {
       const [catRes, prodRes] = await Promise.all([
         fetch("/api/category"),
@@ -67,6 +88,8 @@ export default function DashboardPage() {
       if (prodRes.ok) setProducts(await prodRes.json());
     } catch (error) {
       console.error("Fetch Error:", error);
+    } finally {
+      setIsLoadingData(false); // লোডিং শেষ
     }
   };
 
@@ -80,9 +103,26 @@ export default function DashboardPage() {
     }
   };
 
+  const fetchAddresses = async () => {
+    setIsLoadingData(true);
+    try {
+      const res = await fetch("/api/user/address");
+      if (res.ok) {
+        const data = await res.json();
+        setAddresses(data);
+      }
+    } catch (error) {
+      console.error("Address fetch error:", error);
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === "profile") fetchProfile();
     if (activeTab === "items") fetchData();
+    if (activeTab === "orders") fetchOrders();
+    if (activeTab === "address") fetchAddresses();
   }, [activeTab]);
 
   useEffect(() => {
@@ -211,11 +251,26 @@ export default function DashboardPage() {
       </div>
     );
 
+  const fetchOrders = async () => {
+    setIsLoadingData(true);
+    try {
+      const res = await fetch("/api/orders"); 
+      if (res.ok) {
+        const data = await res.json();
+        setOrders(data);
+      }
+    } catch (error) {
+      console.error("Order Fetch Error:", error);
+    } finally {
+      setIsLoadingData(false);
+    }
+  };  
+
   const role = session.user?.role;
   const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
 
   return (
-    <div className="min-h-screen bg-black text-white flex">
+    <div className="min-h-screen bg-black text-white flex pt-10">
       {/* Sidebar */}
       <div className="w-72 border-r border-gray-800 p-8 flex flex-col gap-8">
         <h1 className="text-3xl font-black italic tracking-tighter">E-BAZ</h1>
@@ -273,7 +328,7 @@ export default function DashboardPage() {
         </nav>
         <button
           onClick={() => signOut({ callbackUrl: "/sign-in" })}
-          className="mt-auto flex items-center gap-3 p-4 text-red-500 hover:bg-red-500/10 rounded-2xl transition font-bold"
+          className="mt-auto cursor-pointer flex items-center gap-3 p-4 text-red-500 hover:bg-red-500/10 rounded-2xl transition font-bold"
         >
           <LogOut size={20} /> Logout
         </button>
@@ -298,7 +353,6 @@ export default function DashboardPage() {
 
           {activeTab === "profile" && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-              {/* Profile Card */}
               <div className="p-10 bg-gray-900/50 rounded-3xl border border-gray-800 shadow-2xl">
                 <div className="flex items-center gap-4 mb-8">
                   <UserIcon className="text-gray-400" size={32} />
@@ -328,7 +382,6 @@ export default function DashboardPage() {
                   </button>
                 </form>
               </div>
-              {/* Password Card */}
               <div className="p-10 bg-gray-900/50 rounded-3xl border border-gray-800 shadow-2xl">
                 <div className="flex items-center gap-4 mb-8">
                   <Lock className="text-gray-400" size={32} />
@@ -416,14 +469,16 @@ export default function DashboardPage() {
                     </button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {categories.map((cat) => (
-                      <ItemCard
-                        key={cat.id}
-                        title={cat.name}
-                        image={cat.image}
-                        onEdit={() => openModal("category", cat)}
-                      />
-                    ))}
+                    {isLoadingData
+                      ? [...Array(6)].map((_, i) => <ItemSkeleton key={i} />)
+                      : categories.map((cat) => (
+                          <ItemCard
+                            key={cat.id}
+                            title={cat.name}
+                            image={cat.image}
+                            onEdit={() => openModal("category", cat)}
+                          />
+                        ))}
                   </div>
                 </div>
               ) : (
@@ -438,24 +493,91 @@ export default function DashboardPage() {
                     </button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {products.map((prod) => (
-                      <ItemCard
-                        key={prod.id}
-                        title={prod.name}
-                        subtitle={`$${prod.price}`}
-                        image={prod.images?.[0]}
-                        onEdit={() => openModal("product", prod)}
-                      />
-                    ))}
+                    {isLoadingData
+                      ? [...Array(4)].map((_, i) => <ItemSkeleton key={i} />)
+                      : products.map((prod) => (
+                          <ItemCard
+                            key={prod.id}
+                            title={prod.name}
+                            subtitle={`$${prod.price}`}
+                            image={prod.images?.[0]}
+                            onEdit={() => openModal("product", prod)}
+                          />
+                        ))}
                   </div>
                 </div>
               )}
             </div>
           )}
+
+          {activeTab === "orders" && (
+            <div className="tab-content">
+              {isLoadingData ? (
+                <div className="p-20 text-center text-gray-500 italic animate-pulse">
+                  Fetching Order History...
+                </div>
+              ) : (
+                <OrderTable orders={orders} />
+              )}
+            </div>
+          )}
+
+          {activeTab === "address" && (
+  <div className="tab-content space-y-8">
+    <div className="flex justify-between items-center">
+      <h3 className="text-3xl font-black italic uppercase tracking-tighter">Saved Addresses</h3>
+      <button className="px-6 py-3 bg-white text-black font-bold rounded-full flex items-center gap-2 hover:scale-105 transition">
+        <Plus size={20} /> Add New Address
+      </button>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {isLoadingData ? (
+        // সিম্পল লোডিং কার্ড
+        [1, 2].map((i) => <div key={i} className="h-48 bg-gray-900/50 rounded-3xl animate-pulse" />)
+      ) : (
+        addresses.map((addr) => (
+          <div key={addr.id} className="p-8 bg-gray-900/30 border border-gray-800 rounded-[32px] hover:border-white/20 transition-all group relative">
+            {addr.isDefault && (
+              <span className="absolute top-6 right-8 text-[10px] bg-white text-black px-3 py-1 rounded-full font-black uppercase tracking-widest">
+                Default
+              </span>
+            )}
+            
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-white/5 rounded-2xl text-gray-400">
+                <MapPin size={24} />
+              </div>
+              <div className="space-y-2">
+                <p className="text-xl font-bold text-white">{addr.street}</p>
+                <p className="text-gray-500 font-medium">
+                  {addr.city}, {addr.state && `${addr.state}, `}{addr.zipCode}
+                </p>
+                <p className="text-gray-400 text-sm uppercase tracking-widest font-bold">
+                  {addr.country}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-4 mt-8 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button className="text-sm font-bold text-gray-400 hover:text-white transition">Edit</button>
+              <button className="text-sm font-bold text-red-500/50 hover:text-red-500 transition">Remove</button>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+
+      {!isLoadingData && addresses.length === 0 && (
+        <div className="text-center py-20 border-2 border-dashed border-gray-800 rounded-[40px] opacity-30 italic text-xl">
+          No addresses found in your profile.
+        </div>
+      )}
+        </div>
+      )}
         </div>
       </div>
 
-      {/* Modal - Universal (Add/Edit for both) */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-8 backdrop-blur-sm">
           <div className="bg-gray-900 rounded-[40px] border border-gray-800 p-12 max-w-2xl w-full">

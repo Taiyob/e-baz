@@ -20,6 +20,30 @@ export async function GET() {
   return NextResponse.json(orders);
 }
 
+const orders = await prisma.order.findMany({
+  include: {
+    user: {
+      select: {
+        name: true,
+        email: true,
+      },
+    },
+    items: {
+      include: {
+        product: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    },
+    address: true, 
+  },
+  orderBy: {
+    createdAt: 'desc',
+  },
+});
+
 // /* eslint-disable @typescript-eslint/no-explicit-any */
 // import { NextResponse } from "next/server";
 // import { prisma } from "@/lib/prisma";

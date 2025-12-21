@@ -90,11 +90,11 @@ export default function AuthPage() {
   }, [isLogin]);
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center px-8">
+    <div className="min-h-screen bg-black text-white flex items-center justify-center px-8 pt-24 md:pt-32">
       <div ref={containerRef} className="max-w-md w-full">
         {/* Logo / Title */}
         <div className="text-center mb-16">
-          <h1 className="text-8xl md:text-9xl font-black mb-4">LUXE</h1>
+          <h1 className="text-8xl md:text-9xl font-black mb-4">BUZZ</h1>
           <p className="text-xl opacity-70">Minimal • Timeless • Yours</p>
         </div>
 
@@ -209,7 +209,7 @@ export default function AuthPage() {
         </div>
 
         {/* Social Login (optional) */}
-        <button className="w-full py-6 border border-gray-600 rounded-full text-xl hover:bg-gray-900 transition">
+        <button onClick={() => signIn("google", { callbackUrl: "/dashboard" })} className="w-full cursor-pointer py-6 border border-gray-600 rounded-full text-xl hover:bg-gray-900 transition">
           Continue with Google
         </button>
       </div>

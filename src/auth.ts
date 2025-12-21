@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { DefaultSession } from "next-auth";
 import { JWT } from "next-auth/jwt";
+import Google from "next-auth/providers/google"; 
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
 
 declare module "next-auth" {
   interface User {
@@ -25,7 +27,22 @@ declare module "next-auth/jwt" {
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  adapter: PrismaAdapter(prisma), 
+  session: { strategy: "jwt" },
   providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+          role: profile.role ?? "USER", 
+        };
+      },
+    }),
     Credentials({
       name: "Credentials",
       credentials: {
@@ -48,7 +65,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if (!isPasswordCorrect) return null;
 
-        // এখানে আমরা ডাটাবেস থেকে পাওয়া role রিটার্ন করছি
         return {
           id: user.id.toString(),
           name: user.name,
@@ -59,10 +75,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+      }
+      if (trigger === "update" && session) {
+        token.name = session.name;
       }
       return token;
     },
